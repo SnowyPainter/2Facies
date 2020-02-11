@@ -1,0 +1,37 @@
+﻿<Window x:Class="_2Facies.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:local="clr-namespace:_2Facies"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="500" Width="770" WindowStartupLocation="CenterScreen" WindowStyle="None" MinWidth="770" MinHeight="500">
+    <Grid Background="#FF1B1B1B">
+        <Grid x:Name="TopMenuNavigation" VerticalAlignment="Top" Background="#FF232628" MouseDown="NavigationBar_DragMove" Width="{Binding ElementName=canv, Path=ActualWidth}" Height="50">
+            <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Width="45" Height="45" BorderBrush="#FF9FA9B4" Click="WindowMinimize_Btn_Clicked" Foreground="#DDFFFFFF" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,8,0" Background="#FF2D3033">
+                    <materialDesign:PackIcon Kind="WindowMinimize"/>
+                </Button>
+                <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Width="45" Height="45" BorderBrush="#FF9FA9B4" Click="WindowClose_Btn_Clicked" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0" Background="#FF2D3033">
+                    <materialDesign:PackIcon Kind="Close"/>
+                </Button>
+            </StackPanel>
+            <Image HorizontalAlignment="Left" Height="40" VerticalAlignment="Top" Width="40" Margin="5,5,0,0" Source="./Resource/Images/2Facies_Icon_100x100.png"/>
+            <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="2Facies 로그인" VerticalAlignment="Top" Margin="58,10,0,0" Height="30" Width="160" FontSize="20" FontFamily="Malgun Gothic Semilight" Foreground="#FF9FA9B4"/>
+        </Grid>
+        <Grid Margin="15,71,15,17" Background="#FF232628">
+            <TextBlock TextWrapping="Wrap" Text="안녕하세요" Margin="0,56,2,320" Foreground="#FFDADADA" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" OverridesDefaultStyle="True"/>
+            <TextBox x:Name="Id_TextBox" HorizontalAlignment="Center" Height="35" Margin="347,150,166,219" TextWrapping="Wrap" Text="아이디를 입력해주세요" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="20"/>
+            <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="ID" VerticalAlignment="Center" Margin="175,160,406,224" FontSize="16" Foreground="#FFDADADA" Width="41"/>
+            <TextBox x:Name="Password_TextBox" HorizontalAlignment="Center" Height="35" Margin="347,214,166,155" TextWrapping="Wrap" Text="비밀번호를 입력해주세요" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="20"/>
+            <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="PASSWORD" VerticalAlignment="Center" Margin="176,224,351,159" FontSize="16" Foreground="#FFDADADA" Width="95"/>
+            <Button HorizontalAlignment="Center" VerticalAlignment="Center" Width="194" Margin="214,304,214,50" BorderBrush="#FFDADADA" Foreground="#FFDADADA" Background="#FF9FA9B4" Height="50" Click="LoginButton_Clicked">
+                <materialDesign:PackIcon Width="40" Height="40" Kind="Login"></materialDesign:PackIcon>
+            </Button>
+            <TextBlock Foreground="#FFDADADA" FontSize="14" TextAlignment="Right" HorizontalAlignment="Right" TextWrapping="Wrap" Text="아직 회원이 아니신가요?" VerticalAlignment="Bottom" Margin="0,0,22,55" Height="20" Width="165"/>
+            <TextBlock Foreground="#FFDADADA" FontSize="14" TextAlignment="Right" HorizontalAlignment="Right" TextWrapping="Wrap" Text="비밀번호를 잊으셨나요?" VerticalAlignment="Bottom" Margin="0,0,22,80" Height="20" Width="165"/>
+        </Grid>
+
+    </Grid>
+</Window>
