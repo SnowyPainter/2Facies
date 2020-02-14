@@ -1,11 +1,5 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace _2Facies
@@ -15,17 +9,18 @@ namespace _2Facies
         private static readonly HttpClient client = new HttpClient();
 
         private static readonly string url_login = $"{RequestingUrls.Domain}/{RequestingUrls.LoginRequestURL}";
+        private static readonly string url_register = $"{RequestingUrls.Domain}/{RequestingUrls.RegisterRequestURL}";
 
-        
+
 
         public static async Task<HttpContent> RequestPost(IPacket value, string postUrl)
         {
             var content = new FormUrlEncodedContent(value.Tuple());
             var response = await client.PostAsync(postUrl, content);
-            
+
             return response.Content;
         }
-        private static async Task<HttpResponseMessage> RequestPost(Dictionary<string,string> data, string postUrl, HttpClient client)
+        private static async Task<HttpResponseMessage> RequestPost(Dictionary<string, string> data, string postUrl, HttpClient client)
         {
             var content = new FormUrlEncodedContent(data);
             var response = await client.PostAsync(postUrl, content);
@@ -49,6 +44,10 @@ namespace _2Facies
             string token = (await RequestPost(user, url_login)).ReadAsStringAsync().Result;
             return token;
         }
-
+        public static async Task<string> Register(Packet.Register user)
+        {
+            string response = (await RequestPost(user, url_register)).ReadAsStringAsync().Result;
+            return response;
+        }
     }
 }

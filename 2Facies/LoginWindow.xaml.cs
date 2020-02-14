@@ -1,23 +1,10 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
-using System.Resources;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace _2Facies
 {
@@ -36,8 +23,10 @@ namespace _2Facies
         }
         private void ControlsInitilize()
         {
-            Id_TextBox.MaxLength = Packet.MaxLength["Id"];
-            Password_TextBox.MaxLength = Packet.MaxLength["Password"];
+            Id_TextBox.MaxLength = Packet.MaxLength["id"];
+            Password_TextBox.MaxLength = Packet.MaxLength["password"];
+            SignInTemplateGrid.Visibility = Visibility.Visible;
+            RegisterTemplateGrid.Visibility = Visibility.Hidden;
         }
         private void WindowClose_Btn_Clicked(object sender, RoutedEventArgs e)
         {
@@ -54,7 +43,6 @@ namespace _2Facies
         //-------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------
-        //ResourceManager UrlResourceManager = new ResourceManager("_2Facies.RequestingUrls", Assembly.GetExecutingAssembly());
 
         readonly string domain = RequestingUrls.Domain;
 
@@ -62,23 +50,53 @@ namespace _2Facies
         {
             Packet.Login loginData = new Packet.Login(Id_TextBox.Text, Password_TextBox.Text);
             string json = await ServerClient.Login(loginData);
-            Dictionary<string, string> result = JsonConvert.DeserializeObject<Dictionary<string,string>>(json);
+            Dictionary<string, string> result = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
 
-            if(result["succeed"] == "true")
+            if (result["succeed"] == "true")
             {
-                //next window
-                string token = result["token"];
-
-                using(var client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", token);
-                    string info = await (await ServerClient.RequestGet($"{domain}/user/info", client)).ReadAsStringAsync();
-
-                    MessageBox.Show(info);
-                }
-
+                //next user window
+                UserWindow window = new UserWindow(result["token"]);
+                window.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show(result["message"]);
             }
         }
+        private async void RegisterButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            Packet.Register signUpData = new Packet.Register(
+                Register_Id_Textbox.Text, Register_Password_TextBox.Text, Register_Name_Textbox.Text, Register_Email_Textbox.Text, int.Parse(Register_Age_Textbox.Text)
+            );
+
+            string json = await ServerClient.Register(signUpData);
+            Dictionary<string, string> result = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+
+            if(result["result"] == "true")
+            {
+                MessageBox.Show("회원이 되신것을 축하드립니다.");
+            }
+            else
+            {
+                MessageBox.Show(result["message"]);
+            }
+        }
+        private void RegisterLink_Textblock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if(RegisterTemplateGrid.Visibility == Visibility.Visible) //To Signin state
+            {
+                (sender as TextBlock).Text = "아직 회원이 아니신가요?";
+                RegisterTemplateGrid.Visibility = Visibility.Hidden;
+                SignInTemplateGrid.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                (sender as TextBlock).Text = "로그인 하기";
+                RegisterTemplateGrid.Visibility = Visibility.Visible;
+                SignInTemplateGrid.Visibility = Visibility.Hidden;
+            }
+            
+        }
+
     }
 }

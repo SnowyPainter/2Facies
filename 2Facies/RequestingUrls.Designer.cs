@@ -86,5 +86,23 @@ namespace _2Facies {
                 return ResourceManager.GetString("RegisterRequestURL", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   user/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string UserPublicInfoURL {
+            get {
+                return ResourceManager.GetString("UserPublicInfoURL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   user/me과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string UserTokenInfoURL {
+            get {
+                return ResourceManager.GetString("UserTokenInfoURL", resourceCulture);
+            }
+        }
     }
 }

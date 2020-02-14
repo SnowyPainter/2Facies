@@ -128,4 +128,12 @@
     <value>user/register</value>
     <comment>POST</comment>
   </data>
+  <data name="UserPublicInfoURL" xml:space="preserve">
+    <value>user/</value>
+    <comment>GET /:id No auth header</comment>
+  </data>
+  <data name="UserTokenInfoURL" xml:space="preserve">
+    <value>user/me</value>
+    <comment>GET me, auth header token</comment>
+  </data>
 </root>
