@@ -6,7 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:_2Facies"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="790" WindowStartupLocation="CenterScreen" WindowStyle="None" MinWidth="790" MinHeight="500">
+        Title="MainWindow" Height="550" Width="800" WindowStartupLocation="CenterScreen" WindowStyle="None" MinWidth="800" MinHeight="550" Initialized="Window_Initialized">
 
     <Window.Resources>
         <Style x:Key="LinkTextStyle" TargetType="TextBlock">
@@ -45,30 +45,34 @@
         <Grid Margin="15,71,15,17" Background="#FF232628">
             <Grid Visibility="Visible" x:Name="SignInTemplateGrid">
                 <TextBlock TextWrapping="Wrap" Text="안녕하세요" Margin="0,56,2,320" Foreground="#FFDADADA" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" OverridesDefaultStyle="True"/>
-                <TextBox x:Name="Id_TextBox" HorizontalAlignment="Center" Height="35" Margin="347,150,166,219" TextWrapping="Wrap" Text="아이디를 입력해주세요" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="20"/>
-                <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="ID" VerticalAlignment="Center" Margin="175,160,406,224" FontSize="16" Foreground="#FFDADADA" Width="41"/>
-                <TextBox x:Name="Password_TextBox" HorizontalAlignment="Center" Height="35" Margin="347,214,166,155" TextWrapping="Wrap" Text="비밀번호를 입력해주세요" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="20"/>
-                <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="PASSWORD" VerticalAlignment="Center" Margin="176,224,351,159" FontSize="16" Foreground="#FFDADADA" Width="95"/>
+                <TextBox x:Name="Id_TextBox"
+                    Style="{StaticResource MaterialDesignOutlinedTextFieldTextBox}"
+                    Margin="0,119,0,220"
+                    VerticalAlignment="Center"
+                    Height="65"
+                    AcceptsReturn="True"
+                    TextWrapping="Wrap"
+                    VerticalScrollBarVisibility="Auto"
+                    materialDesign:HintAssist.Hint="User Id"
+                    IsEnabled="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextFieldTextBoxEnabledComboBox}" HorizontalAlignment="Center" Width="323" Foreground="White" BorderBrush="#89FFFFFF" CaretBrush="#FFA4A4A4" />
+                <PasswordBox x:Name="Password_TextBox"
+                    Style="{StaticResource MaterialDesignOutlinedPasswordFieldPasswordBox}"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedPasswordFieldPasswordBoxEnabledComboBox}"
+                    materialDesign:HintAssist.Hint="Password" Margin="0,199,0,140" Height="65" HorizontalAlignment="Center" Foreground="White" Width="323" BorderBrush="#89FFFFFF" CaretBrush="#FFA4A4A4" />
                 <Button HorizontalAlignment="Center" VerticalAlignment="Center" Width="194" Margin="214,304,214,50" BorderBrush="#FFDADADA" Foreground="#FFDADADA" Background="#FF9FA9B4" Height="50" Click="LoginButton_Clicked">
                     <materialDesign:PackIcon Width="40" Height="40" Kind="Login"></materialDesign:PackIcon>
                 </Button>
-                <TextBlock Style="{StaticResource LinkTextStyle}" FontSize="14" TextAlignment="Right" HorizontalAlignment="Right" TextWrapping="Wrap" Text="비밀번호를 잊으셨나요?" VerticalAlignment="Bottom" Margin="0,0,22,80" Height="20" Width="165">
+                <TextBlock Style="{StaticResource LinkTextStyle}" FontSize="14" TextAlignment="Right" HorizontalAlignment="Right" TextWrapping="Wrap" Text="비밀번호를 잊으셨나요?" VerticalAlignment="Bottom" Margin="0,0,22,80" Height="20" Width="165" MouseLeftButtonUp="ChangePasswordLink_Click">
                 </TextBlock>
             </Grid>
             <Grid Visibility="Hidden" x:Name="RegisterTemplateGrid">
                 <TextBlock TextWrapping="Wrap" Text="회원가입 하시겠습니까?" Margin="0,56,2,320" Foreground="#FFDADADA" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" OverridesDefaultStyle="True"/>
-                <TextBox x:Name="Register_Id_Textbox" HorizontalAlignment="Center" Height="35" Margin="151,123,402,246" TextWrapping="Wrap" Text="아이디를 입력해주세요" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="20"/>
-                <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="ID" VerticalAlignment="Center" Margin="40,129,651,253" FontSize="16" Foreground="#FFDADADA" Width="41"/>
-                <TextBox x:Name="Register_Password_TextBox" HorizontalAlignment="Center" Height="35" Margin="151,187,402,182" TextWrapping="Wrap" Text="비밀번호를 입력해주세요" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="20"/>
-                <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="PASSWORD" VerticalAlignment="Center" Margin="41,194,596,188" FontSize="16" Foreground="#FFDADADA" Width="95"/>
-
-
-                <TextBox x:Name="Register_Email_Textbox" HorizontalAlignment="Center" Height="35" Margin="475,123,78,246" TextWrapping="Wrap" Text="이메일을 입력해주세요" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="55"/>
-                <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="EMAIL" VerticalAlignment="Center" Margin="389,129,282,253" FontSize="16" Foreground="#FFDADADA" Width="61"/>
-                <TextBox x:Name="Register_Age_Textbox" HorizontalAlignment="Center" Height="35" Margin="475,187,78,182" TextWrapping="Wrap" Text="나이를 입력해주세요" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="3"/>
-                <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="AGE" VerticalAlignment="Center" Margin="390,194,287,188" FontSize="16" Foreground="#FFDADADA" Width="55"/>
-                <TextBox x:Name="Register_Name_Textbox" HorizontalAlignment="Center" Height="34" Margin="310,250,243,120" TextWrapping="Wrap" Text="이름을 입력해주세요" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="20"/>
-                <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="NAME" VerticalAlignment="Center" Margin="225,258,452,125" FontSize="16" Foreground="#FFDADADA" Width="55"/>
+                <TextBox  materialDesign:HintAssist.Hint="아이디를 입력해주세요" Style="{StaticResource MaterialDesignFloatingHintTextBox}" x:Name="Register_Id_Textbox" HorizontalAlignment="Center" Height="50" Margin="175,128,378,236" TextWrapping="Wrap"  VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="20"/>
+                <TextBox   materialDesign:HintAssist.Hint="비밀번호를 입력해주세요" Style="{StaticResource MaterialDesignFloatingHintTextBox}" x:Name="Register_Password_TextBox" HorizontalAlignment="Center" Height="50" Margin="409,129,144,235" TextWrapping="Wrap" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="20"/>
+                <TextBox  materialDesign:HintAssist.Hint="이메일을 입력해주세요" Style="{StaticResource MaterialDesignFloatingHintTextBox}" x:Name="Register_Email_Textbox" HorizontalAlignment="Center" Height="50" Margin="74,209,479,155" TextWrapping="Wrap" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="55"/>
+                <TextBox  materialDesign:HintAssist.Hint="나이를 입력해주세요" Style="{StaticResource MaterialDesignFloatingHintTextBox}" x:Name="Register_Age_Textbox" HorizontalAlignment="Center" Height="50" Margin="310,209,282,155" TextWrapping="Wrap" VerticalAlignment="Center" Width="160" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="2" PreviewTextInput="NumberOnly_PreviewInput"/>
+                <TextBox materialDesign:HintAssist.Hint="이름을 입력해주세요" Style="{StaticResource MaterialDesignFloatingHintTextBox}" x:Name="Register_Name_Textbox" HorizontalAlignment="Center" Height="50" Margin="490,209,63,155" TextWrapping="Wrap" VerticalAlignment="Center" Width="199" BorderBrush="#89FFFFFF" SelectionBrush="#FF4C99D6" Foreground="#FFDADADA" FontSize="16" MaxLength="20"/>
                 <Button HorizontalAlignment="Center" VerticalAlignment="Center" Width="194" Margin="214,304,214,50" BorderBrush="#FFDADADA" Foreground="#FFDADADA" Background="#FF9FA9B4" Height="50" Click="RegisterButton_Clicked">
                     <materialDesign:PackIcon Width="40" Height="40" Kind="Login"></materialDesign:PackIcon>
                 </Button>

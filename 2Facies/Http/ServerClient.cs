@@ -12,7 +12,18 @@ namespace _2Facies
         private static readonly string url_register = $"{RequestingUrls.Domain}/{RequestingUrls.RegisterRequestURL}";
 
 
-
+        public static async Task<bool> ServerConnectionCheck()
+        {
+            try
+            {
+                var response = ServerClient.RequestGet($"{RequestingUrls.Domain}/api/client/version");
+                return await response != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         public static async Task<HttpContent> RequestPost(IPacket value, string postUrl)
         {
             var content = new FormUrlEncodedContent(value.Tuple());

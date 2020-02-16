@@ -20,5 +20,35 @@
             <Image HorizontalAlignment="Left" Height="40" VerticalAlignment="Top" Width="40" Margin="5,5,0,0" Source="Resource/Images/2Facies_Icon_100x100.png"/>
             <TextBlock x:Name="Title_Text" HorizontalAlignment="Left" TextWrapping="Wrap" Text="2Facies" VerticalAlignment="Top" Margin="58,10,0,0" Height="30" Width="662" FontSize="20" FontFamily="Malgun Gothic Semilight" Foreground="#FF9FA9B4"/>
         </Grid>
+        <Grid Visibility="Visible" x:Name="LoobyGrid">
+            <materialDesign:Card materialDesign:ShadowAssist.ShadowDepth="Depth2" Padding="16" Margin="270,100,270,253" HorizontalAlignment="Center" VerticalAlignment="Center" Height="239" Width="452" Background="#FFC3C3C3" Foreground="#FFDADADA">
+                <Grid Background="#FF232628">
+                    <Image x:Name="ProfileCardImage" Margin="14,9,257,43" Source="Resource/Images/2Facies_Icon_100x100.png"/>
+                    <TextBlock x:Name="NameBlock" Margin="197,49,29,122" HorizontalAlignment="Center" VerticalAlignment="Center" Height="36" Width="195" FontSize="24" Foreground="#FFDADADA" TextAlignment="Right">Your Name</TextBlock>
+                    <TextBlock x:Name="AgeBlock" Margin="292,19,29,156" HorizontalAlignment="Center" VerticalAlignment="Center" Height="32" Width="100" FontSize="20" Foreground="#FFDADADA" TextAlignment="Right">Your Age</TextBlock>
+                    <TextBlock x:Name="EmailBlock" Margin="0,174,0,-1" HorizontalAlignment="Right" VerticalAlignment="Center" TextAlignment="Center" Height="34" Width="419" FontSize="20" Foreground="#FFDADADA" Background="#FF636363">Your Email</TextBlock>
+                </Grid>
+            </materialDesign:Card>
+            <Button x:Name="FindFaciesButton"
+                Style="{StaticResource MaterialDesignRaisedButton}"
+                Height="80"
+                materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding isLookingForPlayer}"
+                materialDesign:ButtonProgressAssist.Value="-1"
+                materialDesign:ButtonProgressAssist.IndicatorBackground="#FF9C9C9C"
+                materialDesign:ButtonProgressAssist.IsIndeterminate="True" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="455,455,342,57" Width="195" BorderBrush="#FF9C9C9C" Background="#FF9C9C9C" Click="FindPlayerButton_Clicked">
+
+                <TextBlock
+                  Text="Find Facies" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Button>
+            <Button x:Name="TakePictureButton"
+                Style="{StaticResource MaterialDesignRaisedAccentButton}"
+                Height="80"
+                materialDesign:ButtonAssist.CornerRadius="25 0 0 25"
+                ToolTip="MaterialDesignRaisedAccentButton with Round Top Corners" BorderBrush="#FF7698C1" Background="#FF7698C1" Foreground="#DD000000" Margin="345,455,532,57" HorizontalAlignment="Center" VerticalAlignment="Center" Width="115" Click="TakePictureButton_Click">
+                <materialDesign:PackIcon Kind="CameraOutline"
+                                         Width="35" Height="35"/>
+            </Button>
+
+        </Grid>
     </Grid>
 </Window>

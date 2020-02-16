@@ -1,0 +1,14 @@
+﻿<Window x:Class="_2Facies.LoadingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:_2Facies"
+        mc:Ignorable="d"
+        Title="LoadingWindow" Height="159" Width="434" WindowStartupLocation="CenterOwner" WindowStyle="None" Closing="Window_Closing" Background="Black" MouseDown="Window_MouseDown">
+    <Grid>
+        <ProgressBar Height="150" Width="425" IsIndeterminate="True" Background="Black" Foreground="#FFA2A2A2" BorderBrush="Black"/>
+        <TextBlock x:Name="LoadingMessage" TextWrapping="Wrap" Text="TextBlock" Margin="0" TextAlignment="Center" Height="35" FontSize="22" Foreground="White" Background="#FF191919"/>
+
+    </Grid>
+</Window>

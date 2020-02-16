@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,7 +21,22 @@ namespace _2Facies
         public LoginWindow()
         {
             InitializeComponent();
-            ControlsInitilize(); //Wpf control 초기화
+        }
+        private async void Window_Initialized(object sender, System.EventArgs e)
+        {
+            var reqCheck = ServerClient.ServerConnectionCheck();
+            var loading = new LoadingWindow("서버 연결 확인 중 ...");
+            loading.Show();
+            ControlsInitilize();
+
+            if (!(await reqCheck))
+            {
+                MessageBox.Show("서버와의 연결에 실패했습니다.");
+                loading.LoadingDone();
+                this.Close();
+            }
+
+            loading.LoadingDone();
         }
         private void ControlsInitilize()
         {
@@ -48,7 +65,7 @@ namespace _2Facies
 
         private async void LoginButton_Clicked(object sender, RoutedEventArgs e)
         {
-            Packet.Login loginData = new Packet.Login(Id_TextBox.Text, Password_TextBox.Text);
+            Packet.Login loginData = new Packet.Login(Id_TextBox.Text, Password_TextBox.Password.ToString());
             string json = await ServerClient.Login(loginData);
             Dictionary<string, string> result = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
 
@@ -97,6 +114,15 @@ namespace _2Facies
             }
             
         }
+        private void ChangePasswordLink_Click(object sender, MouseButtonEventArgs e)
+        {
 
+        }
+
+        private static readonly Regex _regex = new Regex("[^0-9.-]+");
+        private void NumberOnly_PreviewInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = _regex.IsMatch(e.Text);
+        }
     }
 }
