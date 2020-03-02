@@ -22,14 +22,14 @@ namespace _2Facies {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class RequestingUrls {
+    public class Request {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal RequestingUrls() {
+        internal Request() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace _2Facies {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("_2Facies.RequestingUrls", typeof(RequestingUrls).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("_2Facies.Request", typeof(Request).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -84,6 +84,24 @@ namespace _2Facies {
         public static string RegisterRequestURL {
             get {
                 return ResourceManager.GetString("RegisterRequestURL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   list/room과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string RoomListURL {
+            get {
+                return ResourceManager.GetString("RoomListURL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ws://localhost:8000/ws과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string SocketURL {
+            get {
+                return ResourceManager.GetString("SocketURL", resourceCulture);
             }
         }
         

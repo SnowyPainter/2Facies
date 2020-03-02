@@ -54,12 +54,12 @@
                     TextWrapping="Wrap"
                     VerticalScrollBarVisibility="Auto"
                     materialDesign:HintAssist.Hint="User Id"
-                    IsEnabled="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextFieldTextBoxEnabledComboBox}" HorizontalAlignment="Center" Width="323" Foreground="White" BorderBrush="#89FFFFFF" CaretBrush="#FFA4A4A4" />
+                    IsEnabled="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextFieldTextBoxEnabledComboBox}" HorizontalAlignment="Center" Width="323" Foreground="White" BorderBrush="#89FFFFFF" CaretBrush="#FFA4A4A4" Text="minwoo" />
                 <PasswordBox x:Name="Password_TextBox"
                     Style="{StaticResource MaterialDesignOutlinedPasswordFieldPasswordBox}"
                     VerticalAlignment="Center"
                     IsEnabled="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedPasswordFieldPasswordBoxEnabledComboBox}"
-                    materialDesign:HintAssist.Hint="Password" Margin="0,199,0,140" Height="65" HorizontalAlignment="Center" Foreground="White" Width="323" BorderBrush="#89FFFFFF" CaretBrush="#FFA4A4A4" />
+                    materialDesign:HintAssist.Hint="Password" Margin="0,199,0,140" Height="65" HorizontalAlignment="Center" Foreground="White" Width="323" BorderBrush="#89FFFFFF" CaretBrush="#FFA4A4A4" Password="1234" />
                 <Button HorizontalAlignment="Center" VerticalAlignment="Center" Width="194" Margin="214,304,214,50" BorderBrush="#FFDADADA" Foreground="#FFDADADA" Background="#FF9FA9B4" Height="50" Click="LoginButton_Clicked">
                     <materialDesign:PackIcon Width="40" Height="40" Kind="Login"></materialDesign:PackIcon>
                 </Button>

@@ -60,6 +60,9 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="websocket-sharp, Version=1.0.1.0, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSocketSharp-netstandard.1.0.1\lib\net45\websocket-sharp.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -72,14 +75,21 @@
     <Compile Include="LoadingWindow.xaml.cs">
       <DependentUpon>LoadingWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="RequestingUrls.Designer.cs">
+    <Compile Include="Request.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>RequestingUrls.resx</DependentUpon>
+      <DependentUpon>Request.resx</DependentUpon>
+    </Compile>
+    <Compile Include="RoomBrowserWindow.xaml.cs">
+      <DependentUpon>RoomBrowserWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RoomWindow.xaml.cs">
+      <DependentUpon>RoomWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserWindow.xaml.cs">
       <DependentUpon>UserWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Http\WsClient.cs" />
     <Page Include="LoadingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -97,6 +107,18 @@
       <DependentUpon>LoginWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Resource\Resources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="RoomBrowserWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="RoomWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -121,9 +143,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="RequestingUrls.resx">
+    <EmbeddedResource Include="Request.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>RequestingUrls.Designer.cs</LastGenOutput>
+      <LastGenOutput>Request.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -147,7 +169,5 @@
       <ErrorText>이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\MaterialDesignThemes.3.0.1\build\MaterialDesignThemes.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MaterialDesignThemes.3.0.1\build\MaterialDesignThemes.targets'))" />
-    <Error Condition="!Exists('..\packages\ShowMeTheXAML.MSBuild.1.0.12\build\net45\ShowMeTheXAML.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ShowMeTheXAML.MSBuild.1.0.12\build\net45\ShowMeTheXAML.MSBuild.targets'))" />
   </Target>
-  <Import Project="..\packages\ShowMeTheXAML.MSBuild.1.0.12\build\net45\ShowMeTheXAML.MSBuild.targets" Condition="Exists('..\packages\ShowMeTheXAML.MSBuild.1.0.12\build\net45\ShowMeTheXAML.MSBuild.targets')" />
 </Project>

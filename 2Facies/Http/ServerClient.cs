@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace _2Facies
@@ -8,15 +7,15 @@ namespace _2Facies
     {
         private static readonly HttpClient client = new HttpClient();
 
-        private static readonly string url_login = $"{RequestingUrls.Domain}/{RequestingUrls.LoginRequestURL}";
-        private static readonly string url_register = $"{RequestingUrls.Domain}/{RequestingUrls.RegisterRequestURL}";
+        private static readonly string url_login = $"{Request.Domain}/{Request.LoginRequestURL}";
+        private static readonly string url_register = $"{Request.Domain}/{Request.RegisterRequestURL}";
 
 
         public static async Task<bool> ServerConnectionCheck()
         {
             try
             {
-                var response = ServerClient.RequestGet($"{RequestingUrls.Domain}/api/client/version");
+                var response = ServerClient.RequestGet($"{Request.Domain}/api/client/version");
                 return await response != null;
             }
             catch
@@ -31,12 +30,12 @@ namespace _2Facies
 
             return response.Content;
         }
-        private static async Task<HttpResponseMessage> RequestPost(Dictionary<string, string> data, string postUrl, HttpClient client)
+        /*private static async Task<HttpResponseMessage> RequestPost(Dictionary<string, string> data, string postUrl, HttpClient client)
         {
             var content = new FormUrlEncodedContent(data);
             var response = await client.PostAsync(postUrl, content);
             return response;
-        }
+        }*/
         public static async Task<HttpContent> RequestGet(string getUrl)
         {
             var response = await client.GetAsync(getUrl);

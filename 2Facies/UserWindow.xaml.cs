@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
@@ -21,15 +20,47 @@ namespace _2Facies
         private readonly string Token = null;
         //data variables
         private Packet.DataPublic userData;
+        public WsClient client;
 
         private bool testing;
         public UserWindow(string token)
         {
             InitializeComponent();
             userData = new Packet.DataPublic();
+            client = new WsClient(ErrorHandler);
             Token = token;
         }
         public UserWindow() { testing = true; }
+        public void ErrorHandler(Packet.ErrorCode code)
+        {
+            switch (code)
+            {
+                case Packet.ErrorCode.WrongCode:
+                    MessageBox.Show("Wrong Code");
+                    break;
+                case Packet.ErrorCode.RoomJoin:
+                    MessageBox.Show("There was an error with join room");
+                    break;
+                case Packet.ErrorCode.RoomLeave:
+                    MessageBox.Show("There was an error with leave room");
+                    break;
+            }
+        }
+
+        //-------------------------------------------------------------------------------------
+        //---------------------Window Initialize, navigion bar btn events------------------
+        //-------------------------------------------------------------------------------------
+        private void AsyncControlsInitilize(Packet.DataPublic user)
+        {
+            NameBlock.Text = user.Name;
+            AgeBlock.Text = user.Age.ToString();
+            EmailBlock.Text = user.Email;
+        }
+        private void ContorlsInitilize()
+        {
+            Title_Text.Text = $"2FACIES 안녕하세요";
+        }
+
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (testing) return;
@@ -39,7 +70,7 @@ namespace _2Facies
 
             var data = GetPrivateData(Token);
             var reqCheck = ServerClient.ServerConnectionCheck();
-            
+
             //processing sync
             ContorlsInitilize();
 
@@ -63,29 +94,15 @@ namespace _2Facies
                 loading.LoadingDone();
                 this.Close();
             }
-            
+
             loading.LoadingDone();
         }
-        private async Task<string> GetPrivateData(string token)
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            using (var client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-                var getDataByToken = $"{RequestingUrls.Domain}/{RequestingUrls.UserTokenInfoURL}";
-                string tokenData = await (await ServerClient.RequestGet(getDataByToken, client)).ReadAsStringAsync();
-                return tokenData;
-            }
+            if (WsClient.Room != null)
+                client.Leave(WsClient.Room.Id);
         }
-        private void AsyncControlsInitilize(Packet.DataPublic user)
-        {
-            NameBlock.Text = user.Name;
-            AgeBlock.Text = user.Age.ToString();
-            EmailBlock.Text = user.Email;
-        }
-        private void ContorlsInitilize()
-        {
-            Title_Text.Text = $"2FACIES 안녕하세요";
-        }
+
         private void WindowClose_Btn_Clicked(object sender, RoutedEventArgs e)
         {
             this.Close();
@@ -103,15 +120,51 @@ namespace _2Facies
         //-------------------------------------------------------------------------------------
 
         private bool isLookingForPlayer = false;
-
+        private async Task<string> GetPrivateData(string token)
+        {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+                var getDataByToken = $"{Request.Domain}/{Request.UserTokenInfoURL}";
+                string tokenData = await (await ServerClient.RequestGet(getDataByToken, client)).ReadAsStringAsync();
+                return tokenData;
+            }
+        }
         private void FindPlayerButton_Clicked(object sender, RoutedEventArgs e)
         {
             isLookingForPlayer = !isLookingForPlayer;
             MessageBox.Show(isLookingForPlayer ? "상대 매칭을 시작합니다." : "상대 매칭을 취소했습니다.");
-
             MaterialDesignThemes.Wpf.ButtonProgressAssist.SetIsIndicatorVisible(FindFaciesButton, isLookingForPlayer);
+            if (!isLookingForPlayer)
+            {
+                client.Leave("1");
+                return;
+            }
+            //create test room
+            client.Join("1");
+            
+            /*client.Emit("broadcast", "1", "Hello!");
+            client.On("message", (ev) =>
+            {
+                MessageBox.Show(ev.Data.Split('@')[1]);
+            });*/
+            //---------------
+        }
+        private async void OpenRoomBrowser_Clicked(object sender, RoutedEventArgs e)
+        {
+            var raw = await (await ServerClient.RequestGet($"{Request.Domain}/{Request.RoomListURL}")).ReadAsStringAsync();
+            var roomList = JsonConvert.DeserializeObject<List<Packet.Room>>(raw);
+
+            if (roomList.Count > 0)
+            {
+                var browser = new RoomBrowserWindow(roomList);
+                browser.ShowDialog();
+            }
+            else
+                MessageBox.Show("There's no room");
         }
 
+        //deaccomplished
         private void TakePictureButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog() { Filter = "Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif; *.png" };

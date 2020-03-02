@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Windows;
 
 namespace _2Facies
 {
@@ -17,10 +16,40 @@ namespace _2Facies
         {
             {"id", 20 }, {"password", 25}, {"name", 20}, {"email", 320}
         };
-        public static Dictionary<string, string> CookiesName = new Dictionary<string, string>()
+
+        public enum ErrorCode
         {
-            {"login","signin" }, {"register", "signup"}
+            Connection = 101,
+            WrongCode = 201,
+            RoomJoin = 301,
+            RoomLeave = 302,
+            ChatSend = 401,
+            ChatConnect = 402,
+            ChatRecv = 403
         };
+
+        public class Room : IPacket
+        {
+            public string Id { get; set; }
+            public string Title { get; set; }
+            public string Participants { get; set; }
+            public Room() { }
+            public Room(string id) { Id = id; }
+            public Room(string title, int participants)
+            {
+                Title = title; Participants = participants.ToString();
+            }
+
+            public Dictionary<string, string> Tuple()
+            {
+                var tuple = new Dictionary<string, string>()
+                {
+                    {"Title", Title } , {"Participants", Participants},
+                };
+
+                return tuple;
+            }
+        }
 
         public class Login : IPacket
         {
@@ -85,7 +114,7 @@ namespace _2Facies
             {
                 Id = id;
             }
-            public DataPublic(string id, string name, string email):this(id)
+            public DataPublic(string id, string name, string email) : this(id)
             {
                 Name = name; Email = email;
             }
@@ -95,7 +124,7 @@ namespace _2Facies
             public string Email { get; set; }
             public int Age { get; set; }
 
-            public Dictionary<string,string> Tuple()
+            public Dictionary<string, string> Tuple()
             {
                 return new Dictionary<string, string>()
                 {

@@ -1,9 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -61,7 +58,7 @@ namespace _2Facies
         //-------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------
 
-        readonly string domain = RequestingUrls.Domain;
+        readonly string domain = Request.Domain;
 
         private async void LoginButton_Clicked(object sender, RoutedEventArgs e)
         {
@@ -89,7 +86,7 @@ namespace _2Facies
             string json = await ServerClient.Register(signUpData);
             Dictionary<string, string> result = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
 
-            if(result["result"] == "true")
+            if (result["result"] == "true")
             {
                 MessageBox.Show("회원이 되신것을 축하드립니다.");
             }
@@ -100,7 +97,7 @@ namespace _2Facies
         }
         private void RegisterLink_Textblock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if(RegisterTemplateGrid.Visibility == Visibility.Visible) //To Signin state
+            if (RegisterTemplateGrid.Visibility == Visibility.Visible) //To Signin state
             {
                 (sender as TextBlock).Text = "아직 회원이 아니신가요?";
                 RegisterTemplateGrid.Visibility = Visibility.Hidden;
@@ -112,7 +109,7 @@ namespace _2Facies
                 RegisterTemplateGrid.Visibility = Visibility.Visible;
                 SignInTemplateGrid.Visibility = Visibility.Hidden;
             }
-            
+
         }
         private void ChangePasswordLink_Click(object sender, MouseButtonEventArgs e)
         {

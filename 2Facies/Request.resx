@@ -128,6 +128,12 @@
     <value>user/register</value>
     <comment>POST</comment>
   </data>
+  <data name="RoomListURL" xml:space="preserve">
+    <value>list/room</value>
+  </data>
+  <data name="SocketURL" xml:space="preserve">
+    <value>ws://localhost:8000/ws</value>
+  </data>
   <data name="UserPublicInfoURL" xml:space="preserve">
     <value>user/</value>
     <comment>GET /:id No auth header</comment>
