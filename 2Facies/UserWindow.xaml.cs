@@ -19,7 +19,7 @@ namespace _2Facies
         //readonly constants variables
         private readonly string Token = null;
         //data variables
-        private Packet.DataPublic userData;
+        public static Packet.DataPublic userData;
         public WsClient client;
 
         private bool testing;
@@ -140,15 +140,10 @@ namespace _2Facies
                 client.Leave("1");
                 return;
             }
-            //create test room
             client.Join("1");
-            
-            /*client.Emit("broadcast", "1", "Hello!");
-            client.On("message", (ev) =>
-            {
-                MessageBox.Show(ev.Data.Split('@')[1]);
-            });*/
-            //---------------
+            //testing
+            /*RoomWindow window = new RoomWindow("1", "1");
+            window.Show();*/
         }
         private async void OpenRoomBrowser_Clicked(object sender, RoutedEventArgs e)
         {

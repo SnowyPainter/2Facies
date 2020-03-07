@@ -80,6 +80,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Request.resx</DependentUpon>
     </Compile>
+    <Compile Include="Resource\ChatMessage.xaml.cs">
+      <DependentUpon>ChatMessage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RoomBrowserWindow.xaml.cs">
       <DependentUpon>RoomBrowserWindow.xaml</DependentUpon>
     </Compile>
@@ -107,6 +110,10 @@
       <DependentUpon>LoginWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Resource\ChatMessage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resource\Resources.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

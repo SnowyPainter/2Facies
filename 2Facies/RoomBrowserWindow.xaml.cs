@@ -13,7 +13,7 @@ namespace _2Facies
         //--------------------------------
         //TESTCODE------------------------
 
-        
+
 
         public RoomBrowserWindow()
         {
@@ -74,7 +74,7 @@ namespace _2Facies
             var room = RoomListView.SelectedItem as Packet.Room;
             SelectedRoomTitle_Textbox.Text = room.Title;
 
-            if(WsClient.Room != null && room.Id == WsClient.Room.Id) //already connected
+            if (WsClient.Room != null && room.Id == WsClient.Room.Id) //already connected
             {
                 JoinButton.IsEnabled = false;
             }
@@ -89,10 +89,9 @@ namespace _2Facies
             if (room == null || WsClient.Room != null && WsClient.Room.Id == room.Id)
                 return;
 
-            client.Join(room.Id);
             JoinButton.IsEnabled = false;
 
-            RoomWindow rw = new RoomWindow();
+            RoomWindow rw = new RoomWindow(room.Id, room.Participants);
             rw.Show();
 
             this.Close();

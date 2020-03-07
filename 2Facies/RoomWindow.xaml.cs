@@ -1,16 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace _2Facies
 {
@@ -20,7 +12,7 @@ namespace _2Facies
     public partial class RoomWindow : Window
     {
 
-        WsClient client;
+        private WsClient client;
 
         public void ChatHandler(Packet.ErrorCode code)
         {
@@ -37,19 +29,98 @@ namespace _2Facies
                     break;
             }
         }
+        public RoomWindow()
+        {
+            InitializeComponent();
+        }
         //--------------------------------------------------------
         //------------------Control, Object Init-----------------
         //--------------------------------------------------------
+        private void InitSocketEvents()
+        {
 
-        public RoomWindow()
+            client.On("message", (ev) =>
+            {
+                var data = ev.Data.Split('@')[1];
+                Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                {
+                    var msg = new Resource.ChatMessage
+                    {
+                        Message = data,
+                        BackColor = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFA2A2A2")),
+                        TextAlign = TextAlignment.Left
+                    };
+                    ChatPanel.Children.Add(msg);
+                }));
+
+            });
+
+            client.On("participants", (ev) =>
+            {
+                var participants = ev.Data.Split('@')[1];
+                
+                Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                {
+                    ParticipantsText.Text = $"{participants}";
+                }));
+            });
+        }
+        public RoomWindow(string room, string participants)
         {
             InitializeComponent();
 
             client = new WsClient(ChatHandler);
+            client.Join(room);
+
+            InitSocketEvents();
+
+            client.Emit("participants", WsClient.Room.Id, "");
+            ParticipantsText.Text = $"{participants}명 접속중";
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            client.Leave(WsClient.Room.Id);
+            if(UserWindow.userData != null && WsClient.Room != null)
+            {
+                var r = WsClient.Room.Id;
+                client.Leave(WsClient.Room.Id);
+                client.Emit("participants", r, "");
+            }
+                
+        }
+        private void WindowClose_Btn_Clicked(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+        private void WindowMinimize_Btn_Clicked(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+        private void NavigationBar_DragMove(object sender, MouseButtonEventArgs e)
+        {
+            DragMove();
+        }
+        //--------------------------------------------------------
+        //------------------Control, Object Init-----------------
+        //--------------------------------------------------------
+
+        private void ChatTextBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            var text = ChatTextBox.Text;
+            if (text != "" && e.Key == Key.Enter)
+            {
+                client.Emit("broadcast", WsClient.Room.Id, text);
+                var msg = new Resource.ChatMessage
+                {
+                    Message = text,
+                    BackColor = (SolidColorBrush)(new BrushConverter().ConvertFrom("#cccccc")),
+                    TextAlign = TextAlignment.Right
+                };
+                ChatPanel.Children.Add(msg);
+
+                ChatTextBox.Text = "";
+                ChatScrollViewer.ScrollToBottom();
+            }
+
         }
     }
 }
