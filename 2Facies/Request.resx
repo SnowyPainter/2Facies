@@ -124,6 +124,9 @@
     <value>user/login</value>
     <comment>POST</comment>
   </data>
+  <data name="LogoutRequestURL" xml:space="preserve">
+    <value>user/logout</value>
+  </data>
   <data name="RegisterRequestURL" xml:space="preserve">
     <value>user/register</value>
     <comment>POST</comment>

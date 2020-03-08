@@ -97,10 +97,24 @@ namespace _2Facies
 
             loading.LoadingDone();
         }
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            if (MessageBox.Show("정말 종료하시겠습니까?","종료", MessageBoxButton.YesNo) == MessageBoxResult.No)
+            {
+                e.Cancel = true;
+                return;
+            }
+
             if (WsClient.Room != null)
                 client.Leave(WsClient.Room.Id);
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+                var getDataByToken = $"{Request.Domain}/{Request.LogoutRequestURL}";
+                string tokenData = await(await ServerClient.RequestGet(getDataByToken, client)).ReadAsStringAsync();
+                
+            }
         }
 
         private void WindowClose_Btn_Clicked(object sender, RoutedEventArgs e)

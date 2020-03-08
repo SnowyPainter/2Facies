@@ -76,10 +76,12 @@ namespace _2Facies
 
             if (WsClient.Room != null && room.Id == WsClient.Room.Id) //already connected
             {
+                AlarmMessageTextblock.Text = "이미 접속된 방입니다.";
                 JoinButton.IsEnabled = false;
             }
             else
             {
+                AlarmMessageTextblock.Text = "";
                 JoinButton.IsEnabled = true;
             }
         }

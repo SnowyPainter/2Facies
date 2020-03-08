@@ -58,8 +58,6 @@ namespace _2Facies
         //-------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------
 
-        readonly string domain = Request.Domain;
-
         private async void LoginButton_Clicked(object sender, RoutedEventArgs e)
         {
             Packet.Login loginData = new Packet.Login(Id_TextBox.Text, Password_TextBox.Password.ToString());
@@ -70,7 +68,9 @@ namespace _2Facies
             {
                 //next user window
                 UserWindow window = new UserWindow(result["token"]);
-                window.ShowDialog();
+                window.Show();
+
+                this.Close();
             }
             else
             {

@@ -42,9 +42,10 @@
                 </ListView.View>
             </ListView>
         </materialDesign:Card>
-        
+
         <Button x:Name="JoinButton" Content="Join" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="120" Margin="30,0,0,20" BorderBrush="White" Background="#FF7628FF" Click="JoinButton_Click" IsEnabled="False"/>
         <TextBlock x:Name="SelectedRoomTitle_Textbox" HorizontalAlignment="Left" Margin="30,0,0,60" TextWrapping="Wrap" Text="NON - SELECTED" VerticalAlignment="Bottom" Width="530" FontSize="24" Foreground="White"/>
+        <TextBlock x:Name="AlarmMessageTextblock" HorizontalAlignment="Left" Height="20" Margin="160,500,0,0" TextWrapping="Wrap" Text="  " VerticalAlignment="Top" Width="130" Foreground="#FFDEAEFF" FontSize="14"/>
 
     </Grid>
 </Window>
