@@ -25,7 +25,8 @@ namespace _2Facies
             RoomLeave = 302,
             ChatSend = 401,
             ChatConnect = 402,
-            ChatRecv = 403
+            ChatRecv = 403,
+            RoomNotFound =  501
         };
 
         public class Room : IPacket

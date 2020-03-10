@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 using WebSocketSharp;
 
 namespace _2Facies
@@ -18,9 +19,9 @@ namespace _2Facies
             On("error", (e) =>
             {
                 int val;
-
-                var isInt = int.TryParse(e.Data, out val);
-                var isDefined = Enum.IsDefined(typeof(Packet.ErrorCode), e.Data);
+                string codeStr = e.Data.Split('@')[1];
+                var isInt = int.TryParse(codeStr, out val);
+                var isDefined = Enum.IsDefined(typeof(Packet.ErrorCode), val);
 
                 if (!isDefined || !isInt)
                 {
@@ -37,7 +38,6 @@ namespace _2Facies
                         Room = null;
                         break;
                 }
-
                 //exception handling
                 ErrorHandler(code);
             });

@@ -27,18 +27,39 @@ namespace _2Facies
                 case Packet.ErrorCode.ChatRecv:
                     MessageBox.Show("채팅을 주고 받는데에 문제가 있습니다.");
                     break;
+                case Packet.ErrorCode.RoomNotFound:
+                    MessageBox.Show("방이 존재하지 않습니다.");
+                    Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() => {
+                        this.Close(); 
+                    }));
+                    break;
+
             }
         }
         public RoomWindow()
         {
             InitializeComponent();
+
+            client = new WsClient(ChatHandler);
+            client.Leave("a");
         }
         //--------------------------------------------------------
         //------------------Control, Object Init-----------------
         //--------------------------------------------------------
+        public RoomWindow(string room, string participants)
+        {
+            InitializeComponent();
+
+            client = new WsClient(ChatHandler);
+            client.Join(room);
+
+            InitSocketEvents();
+
+            client.Emit("participants", WsClient.Room.Id, "");
+            ParticipantsText.Text = $"{participants}명 접속중";
+        }
         private void InitSocketEvents()
         {
-
             client.On("message", (ev) =>
             {
                 var data = ev.Data.Split('@')[1];
@@ -55,27 +76,16 @@ namespace _2Facies
 
             });
 
+            //update participants
             client.On("participants", (ev) =>
             {
                 var participants = ev.Data.Split('@')[1];
-                
+
                 Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
                 {
                     ParticipantsText.Text = $"{participants}";
                 }));
             });
-        }
-        public RoomWindow(string room, string participants)
-        {
-            InitializeComponent();
-
-            client = new WsClient(ChatHandler);
-            client.Join(room);
-
-            InitSocketEvents();
-
-            client.Emit("participants", WsClient.Room.Id, "");
-            ParticipantsText.Text = $"{participants}명 접속중";
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
