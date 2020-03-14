@@ -61,6 +61,15 @@ namespace _2Facies {
         }
         
         /// <summary>
+        ///   list/room/connectable과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        public static string ConnectableRoomListURL {
+            get {
+                return ResourceManager.GetString("ConnectableRoomListURL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   http://localhost:8000과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         public static string Domain {
