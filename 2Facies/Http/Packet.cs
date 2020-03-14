@@ -23,6 +23,7 @@ namespace _2Facies
             WrongCode = 201,
             RoomJoin = 301,
             RoomLeave = 302,
+            RoomFull = 303,
             ChatSend = 401,
             ChatConnect = 402,
             ChatRecv = 403,
@@ -34,11 +35,13 @@ namespace _2Facies
             public string Id { get; set; }
             public string Title { get; set; }
             public string Participants { get; set; }
+            public string Max { get; set; }
             public Room() { }
             public Room(string id) { Id = id; }
-            public Room(string title, int participants)
+            public Room(string title, int participants, int max)
             {
                 Title = title; Participants = participants.ToString();
+                Max = max.ToString();
             }
 
             public Dictionary<string, string> Tuple()

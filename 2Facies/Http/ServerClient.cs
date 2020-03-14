@@ -1,4 +1,6 @@
-﻿using System.Net.Http;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace _2Facies
@@ -58,6 +60,18 @@ namespace _2Facies
         {
             string response = (await RequestPost(user, url_register)).ReadAsStringAsync().Result;
             return response;
+        }
+        public static async Task<List<Packet.Room>> RoomList(int limit)
+        {
+            if (limit <= 0) return null;
+            var raw = await (await ServerClient.RequestGet($"{Request.Domain}/{Request.RoomListURL}/{limit}")).ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<Packet.Room>>(raw);
+        }
+        public static async Task<List<Packet.Room>> ConnectableRoomList()
+        {
+            var url = $"{Request.Domain}/{Request.ConnectableRoomListURL}";
+            var rawlist = await (await ServerClient.RequestGet(url)).ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<Packet.Room>>(rawlist);
         }
     }
 }

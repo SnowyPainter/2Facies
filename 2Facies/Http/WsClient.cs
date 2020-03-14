@@ -18,17 +18,16 @@ namespace _2Facies
 
             On("error", (e) =>
             {
-                int val;
-                string codeStr = e.Data.Split('@')[1];
-                var isInt = int.TryParse(codeStr, out val);
-                var isDefined = Enum.IsDefined(typeof(Packet.ErrorCode), val);
+                int codeValue;
 
-                if (!isDefined || !isInt)
+                if (!int.TryParse(e.Data.Split('@')[1], out codeValue) || !Enum.IsDefined(typeof(Packet.ErrorCode), codeValue))
                 {
                     ErrorHandler(Packet.ErrorCode.WrongCode);
                     return;
                 }
-                var code = (Packet.ErrorCode)val;
+
+                Packet.ErrorCode code = (Packet.ErrorCode)codeValue;
+
                 switch (code)
                 {
                     case Packet.ErrorCode.RoomJoin:
@@ -38,7 +37,7 @@ namespace _2Facies
                         Room = null;
                         break;
                 }
-                //exception handling
+                //Pass error handler
                 ErrorHandler(code);
             });
         }

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -12,20 +14,6 @@ namespace _2Facies
 
         //--------------------------------
         //TESTCODE------------------------
-
-
-
-        public RoomBrowserWindow()
-        {
-            InitializeComponent();
-            List<Packet.Room> list = new List<Packet.Room>();
-            list.Add(new Packet.Room("Hello", 5));
-            list.Add(new Packet.Room("aaadf", 2));
-            list.Add(new Packet.Room("Heladfaslo", 55));
-            list.Add(new Packet.Room("Hesdfasfsfsdfasdllo", 12));
-
-            RoomListView.ItemsSource = list;
-        }
         public void ErrorHandler(Packet.ErrorCode code)
         {
             switch (code)
@@ -46,14 +34,15 @@ namespace _2Facies
 
         private WsClient client;
 
-        public RoomBrowserWindow(List<Packet.Room> list)
+        public RoomBrowserWindow()
         {
             InitializeComponent();
             client = new WsClient(ErrorHandler);
-
-            RoomListView.ItemsSource = list;
         }
-
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            RoomListView.ItemsSource = await ServerClient.RoomList(10);
+        }
         //Window Navigation Bar
         private void WindowClose_Btn_Clicked(object sender, RoutedEventArgs e)
         {
@@ -66,6 +55,10 @@ namespace _2Facies
         private void NavigationBar_DragMove(object sender, MouseButtonEventArgs e)
         {
             DragMove();
+        }
+        private async void ReloadRoomList_Btn_Clicked(object sender, RoutedEventArgs e)
+        {
+            RoomListView.ItemsSource = await ServerClient.RoomList(10);
         }
         //-----------------------
 
@@ -93,7 +86,7 @@ namespace _2Facies
 
             JoinButton.IsEnabled = false;
 
-            RoomWindow rw = new RoomWindow(room.Id, room.Participants);
+            RoomWindow rw = new RoomWindow(room.Id); //, room.Participants
             rw.Show();
 
             this.Close();

@@ -6,10 +6,13 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:_2Facies"
         mc:Ignorable="d"
-        Title="RoomBrowserWindow" Height="550" Width="600" MinHeight="550" MinWidth="600" WindowStyle="None">
+        Title="RoomBrowserWindow" Height="550" Width="600" MinHeight="550" MinWidth="600" WindowStyle="None" Loaded="Window_Loaded">
     <Grid Background="#FF1B1B1B">
         <Grid x:Name="TopMenuNavigation" VerticalAlignment="Top" Background="#FF232628" MouseDown="NavigationBar_DragMove" Width="{Binding ElementName=canv, Path=ActualWidth}" Height="50">
             <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Width="45" Height="45" BorderBrush="#FF9FA9B4" Click="ReloadRoomList_Btn_Clicked" Foreground="#DDFFFFFF" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,8,0" Background="#FF5B29A4">
+                    <materialDesign:PackIcon Kind="Reload" Height="33" Width="30"/>
+                </Button>
                 <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Width="45" Height="45" BorderBrush="#FF9FA9B4" Click="WindowMinimize_Btn_Clicked" Foreground="#DDFFFFFF" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,8,0" Background="#FF2D3033">
                     <materialDesign:PackIcon Kind="WindowMinimize"/>
                 </Button>
@@ -18,7 +21,7 @@
                 </Button>
             </StackPanel>
             <Image HorizontalAlignment="Left" Height="40" VerticalAlignment="Top" Width="40" Margin="5,5,0,0" Source="Resource/Images/2Facies_Icon_100x100.png"/>
-            <TextBlock x:Name="Title_Text" HorizontalAlignment="Left" TextWrapping="Wrap" Text="2Facies" VerticalAlignment="Top" Margin="58,10,0,0" Height="30" Width="407" FontSize="20" FontFamily="Malgun Gothic Semilight" Foreground="#FF9FA9B4"/>
+            <TextBlock x:Name="Title_Text" HorizontalAlignment="Left" TextWrapping="Wrap" Text="2Facies" VerticalAlignment="Top" Margin="58,10,0,0" Height="30" Width="367" FontSize="20" FontFamily="Malgun Gothic Semilight" Foreground="#FF9FA9B4"/>
         </Grid>
         <materialDesign:Card Margin="30,60,30,102">
             <ListView x:Name="RoomListView" Margin="0" FontSize="14" SelectionMode="Single" SelectionChanged="RoomListView_SelectionChanged">
@@ -28,6 +31,13 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Participants}" Foreground="Black" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="최대인원">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Max}" Foreground="Black" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -43,9 +53,9 @@
             </ListView>
         </materialDesign:Card>
 
-        <Button x:Name="JoinButton" Content="Join" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="120" Margin="30,0,0,20" BorderBrush="White" Background="#FF7628FF" Click="JoinButton_Click" IsEnabled="False"/>
+        <Button x:Name="JoinButton" Content="Join" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="120" Margin="30,0,0,20" BorderBrush="White" Background="#FF5B29A4" Click="JoinButton_Click" IsEnabled="False"/>
         <TextBlock x:Name="SelectedRoomTitle_Textbox" HorizontalAlignment="Left" Margin="30,0,0,60" TextWrapping="Wrap" Text="NON - SELECTED" VerticalAlignment="Bottom" Width="530" FontSize="24" Foreground="White"/>
-        <TextBlock x:Name="AlarmMessageTextblock" HorizontalAlignment="Left" Height="20" Margin="160,500,0,0" TextWrapping="Wrap" Text="  " VerticalAlignment="Top" Width="130" Foreground="#FFDEAEFF" FontSize="14"/>
+        <TextBlock x:Name="AlarmMessageTextblock" HorizontalAlignment="Left" Height="20" Margin="420,495,0,0" TextWrapping="Wrap" Text="  " VerticalAlignment="Top" Width="130" Foreground="#FFDEAEFF" FontSize="14"/>
 
     </Grid>
 </Window>
