@@ -44,7 +44,16 @@ namespace _2Facies
                 case Packet.ErrorCode.RoomLeave:
                     MessageBox.Show("There was an error with leave room");
                     break;
+                case Packet.ErrorCode.RoomNotFound:
+                    MessageBox.Show("방이 존재하지 않습니다.");
+                    break;
             }
+        }
+
+        private void QuickMatchUIReset(bool start)
+        {
+            isLookingForPlayer = start;
+            MaterialDesignThemes.Wpf.ButtonProgressAssist.SetIsIndicatorVisible(FindFaciesButton, isLookingForPlayer);
         }
 
         //-------------------------------------------------------------------------------------
@@ -99,7 +108,7 @@ namespace _2Facies
         }
         private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (MessageBox.Show("정말 종료하시겠습니까?","종료", MessageBoxButton.YesNo) == MessageBoxResult.No)
+            if (MessageBox.Show("정말 종료하시겠습니까?", "종료", MessageBoxButton.YesNo) == MessageBoxResult.No)
             {
                 e.Cancel = true;
                 return;
@@ -112,8 +121,8 @@ namespace _2Facies
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
                 var getDataByToken = $"{Request.Domain}/{Request.LogoutRequestURL}";
-                string tokenData = await(await ServerClient.RequestGet(getDataByToken, client)).ReadAsStringAsync();
-                
+                string tokenData = await (await ServerClient.RequestGet(getDataByToken, client)).ReadAsStringAsync();
+
             }
         }
 
@@ -144,33 +153,48 @@ namespace _2Facies
                 return tokenData;
             }
         }
-        private void FindPlayerButton_Clicked(object sender, RoutedEventArgs e)
+        private async void FindPlayerButton_Clicked(object sender, RoutedEventArgs e)
         {
-            isLookingForPlayer = !isLookingForPlayer;
+            QuickMatchUIReset(true);
             MessageBox.Show(isLookingForPlayer ? "상대 매칭을 시작합니다." : "상대 매칭을 취소했습니다.");
-            MaterialDesignThemes.Wpf.ButtonProgressAssist.SetIsIndicatorVisible(FindFaciesButton, isLookingForPlayer);
+            
             if (!isLookingForPlayer)
             {
-                client.Leave("1");
+                client.Leave(WsClient.Room.Id);
                 return;
             }
-            client.Join("1");
-            //testing
-            /*RoomWindow window = new RoomWindow("1", "1");
-            window.Show();*/
-        }
-        private async void OpenRoomBrowser_Clicked(object sender, RoutedEventArgs e)
-        {
-            var raw = await (await ServerClient.RequestGet($"{Request.Domain}/{Request.RoomListURL}")).ReadAsStringAsync();
-            var roomList = JsonConvert.DeserializeObject<List<Packet.Room>>(raw);
 
-            if (roomList.Count > 0)
+            var list = await ServerClient.ConnectableRoomList();
+            if(list.Count <= 0)
             {
-                var browser = new RoomBrowserWindow(roomList);
-                browser.ShowDialog();
+                if(MessageBox.Show("현재 참여할수있는 방이 없습니다. 퀵 매치를 계속 진행 하시겠습니까?", "진행 여부", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    //*******************
+                    //*******************
+                    //*******************
+                    //no room start -> any room id can be used
+                    //*******************
+                    RoomWindow rw = new RoomWindow("1"); //temp value *******************
+                    //*******************
+                    //*******************
+                    //*******************
+                    //*******************
+                    rw.ShowDialog();
+                } 
             }
             else
-                MessageBox.Show("There's no room");
+            {
+                RoomWindow window = new RoomWindow(list[0].Id);
+                window.ShowDialog();
+            }
+
+            QuickMatchUIReset(false);
+        }
+        private void OpenRoomBrowser_Clicked(object sender, RoutedEventArgs e)
+        {
+            var browser = new RoomBrowserWindow();
+            browser.ShowDialog();
+
         }
 
         //deaccomplished

@@ -35,10 +35,10 @@
                 materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding isLookingForPlayer}"
                 materialDesign:ButtonProgressAssist.Value="-1"
                 materialDesign:ButtonProgressAssist.IndicatorBackground="#FF9C9C9C"
-                materialDesign:ButtonProgressAssist.IsIndeterminate="True" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,455,0,57" Width="200" BorderBrush="#FF9C9C9C" Background="#FF9C9C9C" Click="FindPlayerButton_Clicked">
+                materialDesign:ButtonProgressAssist.IsIndeterminate="True" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,455,0,57" Width="200" BorderBrush="#FF503D53" Background="#FF674176" Click="FindPlayerButton_Clicked">
 
                 <TextBlock
-                  Text="Find Facies" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  Text="Quick Match" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Button>
             <Button x:Name="TakePictureButton"
                 Style="{StaticResource MaterialDesignRaisedAccentButton}"
@@ -52,7 +52,7 @@
                 Style="{StaticResource MaterialDesignRaisedAccentButton}"
                 Height="80"
                 materialDesign:ButtonAssist.CornerRadius="25 25 0 0"
-                ToolTip="MaterialDesignRaisedAccentButton with Round Top Corners" BorderBrush="#FF3B7291" Background="#FF3B7291" Foreground="#DD000000" Margin="0,375,0,137" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" Click="OpenRoomBrowser_Clicked">
+                ToolTip="MaterialDesignRaisedAccentButton with Round Top Corners" BorderBrush="#FF4D4D4D" Background="#FF4E5D70" Foreground="#DD000000" Margin="0,375,0,137" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" Click="OpenRoomBrowser_Clicked">
                 <TextBlock Text="Room Browse" Foreground="#DDFFFFFF" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Button>
         </Grid>
