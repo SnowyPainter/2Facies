@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="UserWindow" Height="600" Width="1000" MinHeight="600" MinWidth="1000" WindowStartupLocation="CenterScreen" WindowStyle="None" Closing="Window_Closing" Loaded="Window_Loaded">
     <Grid Background="#FF1B1B1B">
-        <Grid x:Name="TopMenuNavigation" VerticalAlignment="Top" Background="#FF232628" MouseDown="NavigationBar_DragMove" Width="{Binding ElementName=canv, Path=ActualWidth}" Height="50">
+        <Grid x:Name="TopMenuNavigation" VerticalAlignment="Top" Background="#FF232628" MouseDown="NavigationBar_DragMove" Height="50">
             <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Center" HorizontalAlignment="Right">
                 <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Width="45" Height="45" BorderBrush="#FF9FA9B4" Click="WindowMinimize_Btn_Clicked" Foreground="#DDFFFFFF" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,8,0" Background="#FF2D3033">
                     <materialDesign:PackIcon Kind="WindowMinimize"/>

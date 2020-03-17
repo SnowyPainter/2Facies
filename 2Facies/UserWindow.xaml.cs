@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -45,7 +46,13 @@ namespace _2Facies
                     MessageBox.Show("There was an error with leave room");
                     break;
                 case Packet.ErrorCode.RoomNotFound:
-                    MessageBox.Show("방이 존재하지 않습니다.");
+                    MessageBox.Show("Room couldn't be found");
+                    break;
+                case Packet.ErrorCode.FormatError:
+                    MessageBox.Show("Socket format error");
+                    break;
+                case Packet.ErrorCode.RoomExist:
+                    MessageBox.Show("Cannot create room. existing");
                     break;
             }
         }
@@ -122,7 +129,6 @@ namespace _2Facies
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
                 var getDataByToken = $"{Request.Domain}/{Request.LogoutRequestURL}";
                 string tokenData = await (await ServerClient.RequestGet(getDataByToken, client)).ReadAsStringAsync();
-
             }
         }
 
@@ -157,30 +163,11 @@ namespace _2Facies
         {
             QuickMatchUIReset(true);
             MessageBox.Show(isLookingForPlayer ? "상대 매칭을 시작합니다." : "상대 매칭을 취소했습니다.");
-            
-            if (!isLookingForPlayer)
-            {
-                client.Leave(WsClient.Room.Id);
-                return;
-            }
 
             var list = await ServerClient.ConnectableRoomList();
             if(list.Count <= 0)
             {
-                if(MessageBox.Show("현재 참여할수있는 방이 없습니다. 퀵 매치를 계속 진행 하시겠습니까?", "진행 여부", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                {
-                    //*******************
-                    //*******************
-                    //*******************
-                    //no room start -> any room id can be used
-                    //*******************
-                    RoomWindow rw = new RoomWindow("1"); //temp value *******************
-                    //*******************
-                    //*******************
-                    //*******************
-                    //*******************
-                    rw.ShowDialog();
-                } 
+                MessageBox.Show("현재 참여할수있는 방이 없습니다");
             }
             else
             {
@@ -194,9 +181,8 @@ namespace _2Facies
         {
             var browser = new RoomBrowserWindow();
             browser.ShowDialog();
-
         }
-
+        //**
         //deaccomplished
         private void TakePictureButton_Click(object sender, RoutedEventArgs e)
         {
