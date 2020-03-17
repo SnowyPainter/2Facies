@@ -5,12 +5,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:_2Facies.Resource"
-             mc:Ignorable="d" Height="35" Width="235" Margin="0,0,0,5">
-    <Grid>
-
-
-        <Border x:Name="ChatBorder"  BorderThickness="1" BorderBrush="#FFC5C5C5" Background="{Binding BackColor}"  CornerRadius="20">
-            <TextBlock x:Name="MessageBlock" TextAlignment="{Binding TextAlign}" HorizontalAlignment="Left" Margin="9,6,0,6" TextWrapping="Wrap" Text="{Binding Message}" VerticalAlignment="Center" Width="210" FontSize="16"/>
-        </Border>
-    </Grid>
+             mc:Ignorable="d" Width="235" Margin="0,2,0,2">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" HorizontalAlignment="Left" >
+            <Border x:Name="ChatBorder"  BorderThickness="1" BorderBrush="{Binding BackColor}" Background="{Binding BackColor}"  CornerRadius="10" HorizontalAlignment="Left">
+                <TextBlock x:Name="MessageBlock" TextAlignment="{Binding TextAlign}" Margin="9,6,9,6"  Text="{Binding Message}" FontSize="16" TextWrapping="Wrap"/>
+            </Border>
+        </StackPanel>
+    </DockPanel>
 </UserControl>
