@@ -8,12 +8,12 @@ namespace _2Facies
     public class WsClient
     {
         public static Packet.Room Room { get; private set; }
-
+        [ThreadStatic]
         private static WebSocket socket = new WebSocket(Request.SocketURL);
-        private List<Action<MessageEventArgs>> events;
+        private static Dictionary<string, EventHandler<MessageEventArgs>> events = new Dictionary<string, EventHandler<MessageEventArgs>>();
         public WsClient(Action<Packet.ErrorCode> ErrorHandler)
         {
-            events = new List<Action<MessageEventArgs>>();
+
             socket.Connect();
 
             On("error", (e) =>
@@ -43,14 +43,20 @@ namespace _2Facies
         }
         public void On(string eventName, Action<MessageEventArgs> action)
         {
-            if (events.Contains(action))
-                return;
-            socket.OnMessage += (sender, e) =>
+            if(events.ContainsKey(eventName))
+            {
+                socket.OnMessage -= events[eventName];
+                events.Remove(eventName);
+            }
+
+            events.Add(eventName, (sender, e) =>
             {
                 if (e.Data.Split('@')[0] == eventName)
                     action(e);
-            };
-            events.Add(action);
+            });
+
+            socket.OnMessage += events[eventName];
+            
         }
         public void Emit(string eventName, string message)
         {
@@ -59,6 +65,13 @@ namespace _2Facies
         public void Emit(string eventName, string room, string message)
         {
             socket.Send($"{eventName} {room}@{message}");
+        }
+        public void Create(string roomTitle, int maxParticipants, Action<MessageEventArgs> dataReturn)
+        {
+            socket.Send($"create@{roomTitle} {maxParticipants}");
+
+            On("created", dataReturn);
+            
         }
         public void Join(string roomName)
         {
