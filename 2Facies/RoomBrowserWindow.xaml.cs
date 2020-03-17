@@ -65,6 +65,8 @@ namespace _2Facies
         private void RoomListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             var room = RoomListView.SelectedItem as Packet.Room;
+            if (room == null) return;
+
             SelectedRoomTitle_Textbox.Text = room.Title;
 
             if (WsClient.Room != null && room.Id == WsClient.Room.Id) //already connected
@@ -88,6 +90,14 @@ namespace _2Facies
 
             RoomWindow rw = new RoomWindow(room.Id); //, room.Participants
             rw.Show();
+
+            this.Close();
+        }
+
+        private void CreateNewRoom_Clicked(object sender, RoutedEventArgs e)
+        {
+            CreateRoomWindow crw = new CreateRoomWindow();
+            crw.ShowDialog();
 
             this.Close();
         }

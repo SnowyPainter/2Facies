@@ -10,7 +10,7 @@
     <Grid Background="#FF1B1B1B">
         <Grid x:Name="TopMenuNavigation" VerticalAlignment="Top" Background="#FF232628" MouseDown="NavigationBar_DragMove" Width="{Binding ElementName=canv, Path=ActualWidth}" Height="50">
             <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Center" HorizontalAlignment="Right">
-                <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Width="45" Height="45" BorderBrush="#FF9FA9B4" Click="ReloadRoomList_Btn_Clicked" Foreground="#DDFFFFFF" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,8,0" Background="#FF5B29A4">
+                <Button x:Name="ReloadRoomListBtn" Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Width="45" Height="45" BorderBrush="#FF9FA9B4" Click="ReloadRoomList_Btn_Clicked" Foreground="#DDFFFFFF" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,8,0" Background="#FF5B29A4">
                     <materialDesign:PackIcon Kind="Reload" Height="33" Width="30"/>
                 </Button>
                 <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Width="45" Height="45" BorderBrush="#FF9FA9B4" Click="WindowMinimize_Btn_Clicked" Foreground="#DDFFFFFF" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,8,0" Background="#FF2D3033">
@@ -55,7 +55,8 @@
 
         <Button x:Name="JoinButton" Content="Join" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="120" Margin="30,0,0,20" BorderBrush="White" Background="#FF5B29A4" Click="JoinButton_Click" IsEnabled="False"/>
         <TextBlock x:Name="SelectedRoomTitle_Textbox" HorizontalAlignment="Left" Margin="30,0,0,60" TextWrapping="Wrap" Text="NON - SELECTED" VerticalAlignment="Bottom" Width="530" FontSize="24" Foreground="White"/>
-        <TextBlock x:Name="AlarmMessageTextblock" HorizontalAlignment="Left" Height="20" Margin="420,495,0,0" TextWrapping="Wrap" Text="  " VerticalAlignment="Top" Width="130" Foreground="#FFDEAEFF" FontSize="14"/>
+        <TextBlock x:Name="AlarmMessageTextblock" HorizontalAlignment="Left" Height="30" Margin="325,490,0,0" TextWrapping="Wrap" Text="  " VerticalAlignment="Top" Width="230" Foreground="#FFDEAEFF" FontSize="14"/>
+        <Button Content="Create" HorizontalAlignment="Left" Margin="160,0,0,20" VerticalAlignment="Bottom" Width="155" Click="CreateNewRoom_Clicked"/>
 
     </Grid>
 </Window>
