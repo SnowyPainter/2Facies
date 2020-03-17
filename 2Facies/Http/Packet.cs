@@ -24,10 +24,12 @@ namespace _2Facies
             RoomJoin = 301,
             RoomLeave = 302,
             RoomFull = 303,
+            RoomExist = 304,
             ChatSend = 401,
             ChatConnect = 402,
             ChatRecv = 403,
-            RoomNotFound =  501
+            RoomNotFound =  501,
+            FormatError = 001,
         };
 
         public class Room : IPacket
