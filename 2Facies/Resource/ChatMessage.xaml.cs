@@ -32,5 +32,17 @@ namespace _2Facies.Resource
             get { return MessageBlock.TextAlignment; }
             set { MessageBlock.TextAlignment = value; }
         }
+
+        public HorizontalAlignment HorizontalAlign
+        {
+            get { return MessageStackPanel.HorizontalAlignment; }
+            set { MessageStackPanel.HorizontalAlignment = value; }
+        }
+        
+        public Brush TextColor
+        {
+            get { return MessageBlock.Foreground; }
+            set { MessageBlock.Foreground = value; }
+        }
     }
 }
