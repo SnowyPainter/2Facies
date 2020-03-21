@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace _2Facies {
+namespace _2Facies.Http {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace _2Facies {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("_2Facies.Request", typeof(Request).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("_2Facies.Http.Request", typeof(Request).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
