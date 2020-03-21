@@ -9,15 +9,15 @@ namespace _2Facies
     {
         private static readonly HttpClient client = new HttpClient();
 
-        private static readonly string url_login = $"{Request.Domain}/{Request.LoginRequestURL}";
-        private static readonly string url_register = $"{Request.Domain}/{Request.RegisterRequestURL}";
+        private static readonly string url_login = $"{Http.Request.Domain}/{Http.Request.LoginRequestURL}";
+        private static readonly string url_register = $"{Http.Request.Domain}/{Http.Request.RegisterRequestURL}";
 
 
         public static async Task<bool> ServerConnectionCheck()
         {
             try
             {
-                var response = ServerClient.RequestGet($"{Request.Domain}/api/client/version");
+                var response = ServerClient.RequestGet($"{Http.Request.Domain}/api/client/version");
                 return await response != null;
             }
             catch
@@ -64,12 +64,12 @@ namespace _2Facies
         public static async Task<List<Packet.Room>> RoomList(int limit)
         {
             if (limit <= 0) return null;
-            var raw = await (await ServerClient.RequestGet($"{Request.Domain}/{Request.RoomListURL}/{limit}")).ReadAsStringAsync();
+            var raw = await (await ServerClient.RequestGet($"{Http.Request.Domain}/{Http.Request.RoomListURL}/{limit}")).ReadAsStringAsync();
             return JsonConvert.DeserializeObject<List<Packet.Room>>(raw);
         }
         public static async Task<List<Packet.Room>> ConnectableRoomList()
         {
-            var url = $"{Request.Domain}/{Request.ConnectableRoomListURL}";
+            var url = $"{Http.Request.Domain}/{Http.Request.ConnectableRoomListURL}";
             var rawlist = await (await ServerClient.RequestGet(url)).ReadAsStringAsync();
             return JsonConvert.DeserializeObject<List<Packet.Room>>(rawlist);
         }

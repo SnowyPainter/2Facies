@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Windows;
 using WebSocketSharp;
 
@@ -9,11 +10,11 @@ namespace _2Facies
     {
         public static Packet.Room Room { get; private set; }
         [ThreadStatic]
-        private static WebSocket socket = new WebSocket(Request.SocketURL);
+        private static WebSocket socket = new WebSocket(Http.Request.SocketURL);
         private static Dictionary<string, EventHandler<MessageEventArgs>> events = new Dictionary<string, EventHandler<MessageEventArgs>>();
         public WsClient(Action<Packet.ErrorCode> ErrorHandler)
         {
-
+            
             socket.Connect();
 
             On("error", (e) =>

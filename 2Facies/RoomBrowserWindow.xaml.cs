@@ -88,7 +88,7 @@ namespace _2Facies
 
             JoinButton.IsEnabled = false;
 
-            RoomWindow rw = new RoomWindow(room.Id); //, room.Participants
+            RoomWindow rw = new RoomWindow(room); //, room.Participants
             rw.Show();
 
             this.Close();

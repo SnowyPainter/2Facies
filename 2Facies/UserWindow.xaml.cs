@@ -127,7 +127,7 @@ namespace _2Facies
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-                var getDataByToken = $"{Request.Domain}/{Request.LogoutRequestURL}";
+                var getDataByToken = $"{Http.Request.Domain}/{Http.Request.LogoutRequestURL}";
                 string tokenData = await (await ServerClient.RequestGet(getDataByToken, client)).ReadAsStringAsync();
             }
         }
@@ -154,7 +154,7 @@ namespace _2Facies
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-                var getDataByToken = $"{Request.Domain}/{Request.UserTokenInfoURL}";
+                var getDataByToken = $"{Http.Request.Domain}/{Http.Request.UserTokenInfoURL}";
                 string tokenData = await (await ServerClient.RequestGet(getDataByToken, client)).ReadAsStringAsync();
                 return tokenData;
             }

@@ -30,6 +30,7 @@ namespace _2Facies
             ChatRecv = 403,
             RoomNotFound =  501,
             FormatError = 001,
+            IncorrectTypeError = 002
         };
 
         public class Room : IPacket
