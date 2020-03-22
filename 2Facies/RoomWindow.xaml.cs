@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MaterialDesignThemes.Wpf;
+using System;
 using System.IO;
 using System.Media;
 using System.Text;
@@ -6,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace _2Facies
 {
@@ -47,12 +49,13 @@ namespace _2Facies
 
             }
         }
-
         private void audioHandler(float sample)
         {
             float converted = 100 * sample;
-
-            VoiceAudioScaleBar.Value = converted;
+            Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+            {
+                VoiceAudioScaleBar.Value = converted;
+            }));
         }
         //--------------------------------------------------------
         //------------------Control, Object Init-----------------
@@ -66,18 +69,28 @@ namespace _2Facies
             InitSocketEvents();
 
             //variable init
-            audioRec = new AudioRecord(0, 8000, 1, audioHandler);
-            var brushconv = new BrushConverter();
-
-            selfColor = (SolidColorBrush)brushconv.ConvertFrom("#9951b8");
-            otherColor = (SolidColorBrush)brushconv.ConvertFrom("#bdbdbd");
-
+            InitVariables();
 
             client.Emit("participants", WsClient.Room.Id, "");
         }
         public RoomWindow(Packet.Room data) : this(data.Id)
         {
             InitUIElements(data);
+        }
+        private void InitVariables()
+        {
+            voiceChatMaxTime = TimeSpan.FromSeconds(3);
+            voiceChatTimerInterval = 0.01f; // 0.01 second
+
+            ButtonProgressAssist.SetMaximum(VoiceChatButton, voiceChatMaxTime.Seconds);
+
+            audioRec = new AudioRecord(0, 8000, 1, audioHandler);
+            audioRec.SetTimer(voiceChatTimerInterval, RecordButtonTimer_Tick);
+
+            var brushconv = new BrushConverter();
+
+            selfColor = (SolidColorBrush)brushconv.ConvertFrom("#9951b8");
+            otherColor = (SolidColorBrush)brushconv.ConvertFrom("#bdbdbd");
         }
         private void InitUIElements(Packet.Room info)
         {
@@ -127,21 +140,7 @@ namespace _2Facies
                 }));
             });
         }
-        private void SetVoiceChatState(bool rec)
-        {
-            var brushConv = new BrushConverter();
-            VoiceAudioScaleBar.Value = 0.0f;
-            if (rec)
-            {
-                VoiceChatButton.Background = (SolidColorBrush)brushConv.ConvertFromString("#FFC10F0F");
-                VoiceChatIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Record;
-            }
-            else
-            {
-                VoiceChatButton.Background = (SolidColorBrush)brushConv.ConvertFromString("#FF673AB7");
-                VoiceChatIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Microphone;
-            }
-        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (UserWindow.userData != null && WsClient.Room != null)
@@ -165,27 +164,6 @@ namespace _2Facies
             DragMove();
         }
 
-        public RoomWindow() //testing
-        {
-            audioRec = new AudioRecord(0, 8000, 1, audioHandler);
-            client = new WsClient(ChatHandler);
-            client.Create("Title", 3, (msge) =>
-            {
-
-            });
-
-            client.Join("0");
-            InitSocketEvents();
-            var brushconv = new BrushConverter();
-
-            selfColor = (SolidColorBrush)brushconv.ConvertFrom("#9951b8");
-            otherColor = (SolidColorBrush)brushconv.ConvertFrom("#bdbdbd");
-
-
-            client.Emit("participants", WsClient.Room.Id, "");
-        }
-
-
         //--------------------------------------------------------
         //------------------Control, Object Init-----------------
         //--------------------------------------------------------
@@ -197,9 +175,27 @@ namespace _2Facies
 
         private SolidColorBrush selfColor, otherColor;
         private bool recording = false;
+        
+        private TimeSpan voiceChatMaxTime;
+        private float voiceChatTimerInterval;
 
         //-------------------Variables----------------------------
-
+        private void SetVoiceChatState(bool rec)
+        {
+            var brushConv = new BrushConverter();
+            VoiceAudioScaleBar.Value = 0.0f;
+            if (rec)
+            {
+                VoiceChatButton.Background = (SolidColorBrush)brushConv.ConvertFromString("#FFC10F0F");
+                VoiceChatIcon.Kind = PackIconKind.Record;
+            }
+            else
+            {
+                VoiceChatButton.Background = (SolidColorBrush)brushConv.ConvertFromString("#FF673AB7");
+                VoiceChatIcon.Kind = PackIconKind.Microphone;
+                ButtonProgressAssist.SetValue(VoiceChatButton, 0);
+            }
+        }
         //Chat
         private void ChatTextBox_KeyUp(object sender, KeyEventArgs e)
         {
@@ -233,24 +229,58 @@ namespace _2Facies
             else
             {
                 var stream = audioRec.Stop();
-                //임시방편 , TEMP way to prevent larger than .
-                
+
                 if (stream != null)
                 {
                     var pcmAudio = stream.ToByteArray();
                     string pcm = BitConverter.ToString(pcmAudio);
-
+                    Console.WriteLine(pcm.Length);
                     if (pcm.Length < 120000)
                     {
                         client.Emit("broadcast-audio", WsClient.Room.Id, pcm);
-                    } else
+                    }
+                    else
                     {
-                        MessageBox.Show("Too Much Audio Sounds");
+                        Console.WriteLine("Too Much Audio Sounds");
                     }
                 }
             }
 
             SetVoiceChatState(recording);
         }
+
+        private void RecordButtonTimer_Tick(object sender, int tickCount)
+        {
+            
+            if (TimeSpan.FromSeconds(voiceChatTimerInterval * tickCount) >= voiceChatMaxTime)
+            {
+                Console.WriteLine("STopped");
+                audioRec.InterruptRecording();
+                (sender as DispatcherTimer).Stop();
+                return;
+            }
+            Console.WriteLine(voiceChatTimerInterval * tickCount);
+            ButtonProgressAssist.SetValue(VoiceChatButton, voiceChatTimerInterval * tickCount);
+        }
+
+
+        public RoomWindow() //testing
+        {
+            InitializeComponent();
+
+            InitVariables();
+
+            client = new WsClient(ChatHandler);
+            client.Create("Title", 3, (msge) =>
+            {
+
+            });
+
+            client.Join("0");
+            InitSocketEvents();
+
+            client.Emit("participants", WsClient.Room.Id, "");
+        }
+
     }
 }
