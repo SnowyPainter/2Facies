@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace _2Facies
 {
@@ -19,7 +20,7 @@ namespace _2Facies
                 waveWriter.Flush();
             }
             float maxRecorded = 0.0f;
-            for (int i = 0;i < e.BytesRecorded;i+=2)
+            for (int i = 0; i < e.BytesRecorded; i += 2)
             {
                 short sample = (short)((e.Buffer[i + 1] << 8) |
                                 e.Buffer[i + 0]);
@@ -40,41 +41,91 @@ namespace _2Facies
             }
         }
 
-        private WaveIn wave;
+        private WaveInEvent wave;
         private WaveFileWriter waveWriter;
         private Stream memoryStream;
+        private DispatcherTimer timer;
+
+        public bool Interrupted { get; private set; }
+
+        private int tickCount;
+        private float tickInterval;
 
         public AudioRecord(int device, int sampleRate, int channels, Action<float> dataAvailableHandler)
         {
             int waveInDevices = WaveIn.DeviceCount;
-            if(waveInDevices < 1)
+            if (waveInDevices < 1)
             {
                 throw new Exception("there's no connectable devices in computer : AudioRecord constructor");
             }
 
-            wave = new WaveIn();
+            wave = new WaveInEvent();
+
             wave.DeviceNumber = device;
             wave.DataAvailable += (sender, e) =>
             {
                 waveMaxSample(e, dataAvailableHandler);
             };
             wave.RecordingStopped += OnRecordingStopped;
-            
+
             wave.WaveFormat = new WaveFormat(sampleRate, channels);
-            
+
+
+        }
+
+        public void SetTimer(float interval, Action<object, int> tickEvent = null)
+        {
+            timer = new DispatcherTimer();
+            tickInterval = interval;
+            timer.Interval = TimeSpan.FromSeconds(tickInterval);
+            timer.Tick += (sender, e) =>
+            {
+                tickEvent(sender, tickCount);
+                tickCount++;
+            };
         }
 
         public void Start()
         {
             memoryStream = new MemoryStream();
             waveWriter = new WaveFileWriter(new IgnoreDisposeStream(memoryStream), wave.WaveFormat);
+            Interrupted = false;
+            tickCount = 0;
+
             wave.StartRecording();
+
+            if (timer != null)
+                timer.Start();
+        }
+        public void InterruptRecording()
+        {
+            //Console.WriteLine($"Interrupted, Writer null ? {waveWriter == null}");
+            if (waveWriter == null || memoryStream == null) return;
+
+            Interrupted = true;
+            wave.StopRecording();
+
+            if (timer != null)
+                timer.Stop();
         }
         public Stream Stop()
         {
-            if (waveWriter == null || memoryStream == null) return null;
+            /*if(!Interrupted)
+                Console.WriteLine($"Audio Rec End, Writer null ? {waveWriter == null}");*/
+            if ((!Interrupted && waveWriter == null) || memoryStream == null)
+            {
+                return null;
+            }
 
-            wave.StopRecording();
+            if (!Interrupted)
+            {
+                wave.StopRecording();
+                if (timer != null)
+                    timer.Stop();
+            }
+
+            Interrupted = false;
+            tickCount = 0;
 
             return memoryStream;
         }
