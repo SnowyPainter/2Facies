@@ -71,5 +71,18 @@ namespace _2Facies
             }
             return reversed;
         }
+
+        public static byte[] Combine(this byte[] first, byte[] second)
+        {
+            var ms = new MemoryStream();
+            ms.Write(first, 0, first.Length);
+            ms.Write(second, 0, second.Length);
+            return ms.ToArray();
+        }
+
+        public static string ToStringValue(this Packet.Headers header)
+        {
+            return ((int)header).ToString();
+        }
     }
 }
