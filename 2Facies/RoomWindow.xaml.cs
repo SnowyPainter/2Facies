@@ -71,7 +71,7 @@ namespace _2Facies
             //variable init
             InitVariables();
 
-            client.Emit("participants", WsClient.Room.Id, "");
+            client.Emit(Packet.Headers.Participants, WsClient.Room.Id, null);
         }
         public RoomWindow(Packet.Room data) : this(data.Id)
         {
@@ -101,7 +101,7 @@ namespace _2Facies
         }
         private void InitSocketEvents()
         {
-            client.On("message", (ev) =>
+            client.On(Packet.Headers.Broadcast.ToStringValue(), (ev) =>
             {
                 var data = ev.Data.Split('@')[1];
 
@@ -118,23 +118,23 @@ namespace _2Facies
 
                 }));
             });
-            client.On("message-audio", (ev) =>
+            client.On(Packet.Headers.BroadcastAudio.ToStringValue(), (ev) =>
             {
                 var data = ev.Data.Split('@')[1];
-
-                Stream ms = new MemoryStream(data.ToBitConvertByte());
-
+                Console.WriteLine(data.Length);
+                Stream ms = new MemoryStream(Convert.FromBase64String(data));
+                
                 SoundPlayer soundPlayer = new SoundPlayer();
                 ms.Position = 0;
                 soundPlayer.Stream = null; soundPlayer.Stream = ms;
                 soundPlayer.Play();
             });
             //update participants
-            client.On("participants", (ev) =>
+            client.On(Packet.Headers.Participants.ToStringValue(), (ev) =>
             {
                 var participants = ev.Data.Split('@')[1];
 
-                Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
                     ParticipantsText.Text = $"{participants}명 접속중";
                 }));
@@ -147,7 +147,7 @@ namespace _2Facies
             {
                 var r = WsClient.Room.Id;
                 client.Leave(WsClient.Room.Id);
-                client.Emit("participants", r, "");
+                client.Emit(Packet.Headers.Participants, r, null);
             }
 
         }
@@ -202,7 +202,7 @@ namespace _2Facies
             var text = ChatTextBox.Text;
             if (text != "" && e.Key == Key.Enter)
             {
-                client.Emit("broadcast", WsClient.Room.Id, text);
+                client.Emit(Packet.Headers.Broadcast, WsClient.Room.Id, Encoding.UTF8.GetBytes(text));
                 var msg = new Resource.ChatMessage
                 {
                     Message = text,
@@ -233,11 +233,13 @@ namespace _2Facies
                 if (stream != null)
                 {
                     var pcmAudio = stream.ToByteArray();
-                    string pcm = BitConverter.ToString(pcmAudio);
-                    Console.WriteLine(pcm.Length);
-                    if (pcm.Length < 120000)
+
+                    var audio = Encoding.UTF8.GetBytes(Convert.ToBase64String(pcmAudio));
+                    Console.WriteLine($"sending lawAudio Len : {pcmAudio.Length}");
+                    Console.WriteLine($"sending base64 Len : {audio.Length}");
+                    if (pcmAudio.Length < 120000)
                     {
-                        client.Emit("broadcast-audio", WsClient.Room.Id, pcm);
+                        client.Emit(Packet.Headers.BroadcastAudio, WsClient.Room.Id, audio);
                     }
                     else
                     {
@@ -254,7 +256,7 @@ namespace _2Facies
             
             if (TimeSpan.FromSeconds(voiceChatTimerInterval * tickCount) >= voiceChatMaxTime)
             {
-                Console.WriteLine("STopped");
+                Console.WriteLine("Interrupt");
                 audioRec.InterruptRecording();
                 (sender as DispatcherTimer).Stop();
                 return;
@@ -262,8 +264,6 @@ namespace _2Facies
             Console.WriteLine(voiceChatTimerInterval * tickCount);
             ButtonProgressAssist.SetValue(VoiceChatButton, voiceChatTimerInterval * tickCount);
         }
-
-
         public RoomWindow() //testing
         {
             InitializeComponent();
@@ -279,7 +279,7 @@ namespace _2Facies
             client.Join("0");
             InitSocketEvents();
 
-            client.Emit("participants", WsClient.Room.Id, "");
+            client.Emit(Packet.Headers.Participants, WsClient.Room.Id, null);
         }
 
     }
