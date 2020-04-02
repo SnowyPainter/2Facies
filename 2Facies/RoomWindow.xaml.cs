@@ -1,10 +1,10 @@
 ﻿using MaterialDesignThemes.Wpf;
+using NAudio.Wave;
 using System;
 using System.IO;
 using System.Media;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -79,7 +79,7 @@ namespace _2Facies
         }
         private void InitVariables()
         {
-            voiceChatMaxTime = TimeSpan.FromSeconds(3);
+            voiceChatMaxTime = TimeSpan.FromSeconds(2);
             voiceChatTimerInterval = 0.01f; // 0.01 second
 
             ButtonProgressAssist.SetMaximum(VoiceChatButton, voiceChatMaxTime.Seconds);
@@ -123,11 +123,12 @@ namespace _2Facies
                 var data = ev.Data.Split('@')[1];
                 Console.WriteLine(data.Length);
                 Stream ms = new MemoryStream(Convert.FromBase64String(data));
+
+                var mp3Reader = new Mp3FileReader(ms);
+                var waveOut = new WaveOutEvent();
+                waveOut.Init(mp3Reader);
+                waveOut.Play();
                 
-                SoundPlayer soundPlayer = new SoundPlayer();
-                ms.Position = 0;
-                soundPlayer.Stream = null; soundPlayer.Stream = ms;
-                soundPlayer.Play();
             });
             //update participants
             client.On(Packet.Headers.Participants.ToStringValue(), (ev) =>
@@ -233,11 +234,10 @@ namespace _2Facies
                 if (stream != null)
                 {
                     var pcmAudio = stream.ToByteArray();
-
-                    var audio = Encoding.UTF8.GetBytes(Convert.ToBase64String(pcmAudio));
-                    Console.WriteLine($"sending lawAudio Len : {pcmAudio.Length}");
+                    
+                    var audio = Encoding.UTF8.GetBytes(Convert.ToBase64String(pcmAudio.ConvertWavToMp3()));
                     Console.WriteLine($"sending base64 Len : {audio.Length}");
-                    if (pcmAudio.Length < 120000)
+                    if (audio.Length < 30000)
                     {
                         client.Emit(Packet.Headers.BroadcastAudio, WsClient.Room.Id, audio);
                     }
@@ -261,7 +261,6 @@ namespace _2Facies
                 (sender as DispatcherTimer).Stop();
                 return;
             }
-            Console.WriteLine(voiceChatTimerInterval * tickCount);
             ButtonProgressAssist.SetValue(VoiceChatButton, voiceChatTimerInterval * tickCount);
         }
         public RoomWindow() //testing
