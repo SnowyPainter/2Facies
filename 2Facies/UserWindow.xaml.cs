@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using _2Facies.Resource;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -21,18 +22,22 @@ namespace _2Facies
         private readonly string Token = null;
         //data variables
         public static Packet.DataPublic userData;
-        public WsClient client;
 
-        private bool testing;
+        //private WsClient client;
+        private Logger logger;
+
+        
         public UserWindow(string token)
         {
             InitializeComponent();
             userData = new Packet.DataPublic();
-            client = new WsClient(ErrorHandler);
+            logger = new Logger(new System.IO.FileInfo($@"{FileResources.LogFile}"));
+            //client = new WsClient(ErrorHandler);
             Token = token;
         }
-        public UserWindow() { testing = true; }
-        public void ErrorHandler(Packet.ErrorCode code)
+        /*bool testing;
+         public UserWindow() { testing = true; }*/
+        /*public void ErrorHandler(Packet.ErrorCode code)
         {
             switch (code)
             {
@@ -56,6 +61,7 @@ namespace _2Facies
                     break;
             }
         }
+        */
 
         private void QuickMatchUIReset(bool start)
         {
@@ -79,7 +85,7 @@ namespace _2Facies
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if (testing) return;
+            //if (testing) return;
 
             var loading = new LoadingWindow("서버와 연결중입니다 ...");
             loading.Show();
@@ -95,6 +101,7 @@ namespace _2Facies
             if (jsonData.ContainsKey("result") && jsonData["result"] == "false")
             {
                 MessageBox.Show("토큰 정보가 올바르지 않습니다 로그인 창으로 돌아갑니다.");
+                logger.Log("Error Token information is faulty");
                 loading.LoadingDone();
                 this.Close();
             }
@@ -107,6 +114,7 @@ namespace _2Facies
             if (!(await reqCheck))
             {
                 MessageBox.Show("서버와의 연결에 실패했습니다.");
+                logger.Log("UserWindow connect with server failed", true);
                 loading.LoadingDone();
                 this.Close();
             }
@@ -120,10 +128,10 @@ namespace _2Facies
                 e.Cancel = true;
                 return;
             }
-
+            /*
             if (WsClient.Room != null)
                 client.Leave(WsClient.Room.Id);
-
+            */
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);

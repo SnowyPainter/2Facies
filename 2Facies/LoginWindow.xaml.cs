@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using _2Facies.Resource;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -12,12 +13,15 @@ namespace _2Facies
     /// </summary>
     public partial class LoginWindow : Window
     {
+        private Logger logger;
+
         //-------------------------------------------------------------------------------------
         //--------------------------타이틀바와 생성 초기화 함수----------------------------------
         //-------------------------------------------------------------------------------------
         public LoginWindow()
         {
             InitializeComponent();
+            logger = new Logger(new System.IO.FileInfo($@"{FileResources.LogFile}"));
         }
         private async void Window_Initialized(object sender, System.EventArgs e)
         {
@@ -29,6 +33,7 @@ namespace _2Facies
             if (!(await reqCheck))
             {
                 MessageBox.Show("서버와의 연결에 실패했습니다.");
+                logger.Log("Error connect server Failed");
                 loading.LoadingDone();
                 this.Close();
             }
@@ -75,6 +80,7 @@ namespace _2Facies
             else
             {
                 MessageBox.Show(result["message"]);
+                logger.Log($"Error login Failed/{result["message"]}");
             }
         }
         private async void RegisterButton_Clicked(object sender, RoutedEventArgs e)
@@ -93,6 +99,7 @@ namespace _2Facies
             else
             {
                 MessageBox.Show(result["message"]);
+                logger.Log($"Error register Failed/{result["message"]}");
             }
         }
         private void RegisterLink_Textblock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)

@@ -1,4 +1,5 @@
-﻿using MaterialDesignThemes.Wpf;
+﻿using _2Facies.Resource;
+using MaterialDesignThemes.Wpf;
 using NAudio.Wave;
 using System;
 using System.IO;
@@ -22,18 +23,22 @@ namespace _2Facies
             {
                 case Packet.ErrorCode.IncorrectTypeError:
                     MessageBox.Show("올바르지못한 종류의 통신입니다.");
+                    logger.Log("Error type of message is incorrect", true);
                     break;
                 case Packet.ErrorCode.ChatConnect:
                     MessageBox.Show("채팅 연결이 불안정합니다.");
+                    logger.Log("Error connecting on SocketRoom", true);
                     break;
                 case Packet.ErrorCode.ChatSend:
                     MessageBox.Show("채팅을 보낼수 없습니다.");
+                    logger.Log("Error Sending message on SocketRoom", true);
                     break;
                 case Packet.ErrorCode.ChatRecv:
                     MessageBox.Show("채팅을 주고 받는데에 문제가 있습니다.");
+                    logger.Log("Error Receiving Other messages on SocketRoom", true);
                     break;
                 case Packet.ErrorCode.RoomFull:
-                    MessageBox.Show("방이 꽉 찼습니다.");
+                    logger.Log("Error Room which connecting was filled with people", true);
                     Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
                     {
                         this.Close();
@@ -41,6 +46,7 @@ namespace _2Facies
                     break;
                 case Packet.ErrorCode.RoomNotFound:
                     MessageBox.Show("방이 존재하지 않습니다.");
+                    logger.Log("Error SocketRoom Not Exist", true);
                     Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
                     {
                         this.Close();
@@ -79,6 +85,7 @@ namespace _2Facies
         }
         private void InitVariables()
         {
+            logger = new Logger(new FileInfo($@"{FileResources.LogFile}"));
             voiceChatMaxTime = TimeSpan.FromSeconds(2);
             voiceChatTimerInterval = 0.01f; // 0.01 second
 
@@ -171,6 +178,7 @@ namespace _2Facies
 
         //-------------------Variables Declare----------------------------
 
+        private Logger logger;
         private WsClient client;
         private AudioRecord audioRec;
 
@@ -234,16 +242,18 @@ namespace _2Facies
                 if (stream != null)
                 {
                     var pcmAudio = stream.ToByteArray();
-                    
-                    var audio = Encoding.UTF8.GetBytes(Convert.ToBase64String(pcmAudio.ConvertWavToMp3()));
-                    Console.WriteLine($"sending base64 Len : {audio.Length}");
-                    if (audio.Length < 30000)
+                    var audio = Encoding.UTF8.GetBytes(Convert.ToBase64String(pcmAudio.ToMP3()));
+                    if(audio.Length < 3000)
+                    {
+                        logger.Log($"MP3 Convert Failed(Cancel).AudioLen:{audio.Length}", true);
+                    }
+                    else if (audio.Length < 30000)
                     {
                         client.Emit(Packet.Headers.BroadcastAudio, WsClient.Room.Id, audio);
                     }
                     else
                     {
-                        Console.WriteLine("Too Much Audio Sounds");
+                        logger.Log($"Too Large to Send.AudioLen:{audio.Length}", true);
                     }
                 }
             }

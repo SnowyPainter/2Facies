@@ -1,4 +1,5 @@
-﻿using System;
+﻿using _2Facies.Resource;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,22 +27,27 @@ namespace _2Facies
             {
                 case Packet.ErrorCode.WrongCode:
                     MessageBox.Show("Wrong Code");
+                    logger.Log("Error Socket WrongCode Sent", true);
                     break;
                 case Packet.ErrorCode.FormatError:
                     MessageBox.Show("Socket format error");
+                    logger.Log("Error Socket CreatingRoom format", true);
                     break;
                 case Packet.ErrorCode.RoomExist:
                     MessageBox.Show("Cannot create room. existing");
+                    logger.Log("Error Socket Creating Room Already Exist", true);
                     break;
             }
         }
 
         private WsClient client;
+        private Logger logger;
 
         public CreateRoomWindow()
         {
             InitializeComponent();
 
+            logger = new Logger(new System.IO.FileInfo($@"{FileResources.LogFile}"));
             client = new WsClient(ErrorHandler);
         }
         private void WindowClose_Btn_Clicked(object sender, RoutedEventArgs e)
