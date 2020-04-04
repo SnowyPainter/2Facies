@@ -85,7 +85,11 @@ namespace _2Facies
         }
         private void InitVariables()
         {
-            logger = new Logger(new FileInfo($@"{FileResources.LogFile}"));
+            logger = new Logger(new FileInfo($@"{FileResources.LogFile}"), 
+                new Action<string>((log) => {
+                    LeastLog.Text = log;
+                }
+            ));
             voiceChatMaxTime = TimeSpan.FromSeconds(2);
             voiceChatTimerInterval = 0.01f; // 0.01 second
 
@@ -242,19 +246,24 @@ namespace _2Facies
                 if (stream != null)
                 {
                     var pcmAudio = stream.ToByteArray();
-                    var audio = Encoding.UTF8.GetBytes(Convert.ToBase64String(pcmAudio.ToMP3()));
-                    if(audio.Length < 3000)
+                    
+                    if(pcmAudio.Length < 3000)
                     {
-                        logger.Log($"MP3 Convert Failed(Cancel).AudioLen:{audio.Length}", true);
-                    }
-                    else if (audio.Length < 30000)
-                    {
-                        client.Emit(Packet.Headers.BroadcastAudio, WsClient.Room.Id, audio);
+                        logger.Log($"MP3 Convert Failed(Too Short PCM).AudioLen:{pcmAudio.Length}", true);
                     }
                     else
                     {
-                        logger.Log($"Too Large to Send.AudioLen:{audio.Length}", true);
+                        var audio = Encoding.UTF8.GetBytes(Convert.ToBase64String(pcmAudio.ToMP3()));
+                        if (audio.Length < 10000)
+                        {
+                            client.Emit(Packet.Headers.BroadcastAudio, WsClient.Room.Id, audio);
+                        }
+                        else
+                        {
+                            logger.Log($"Too Large to Send.AudioLen:{audio.Length}", true);
+                        }
                     }
+                    
                 }
             }
 
@@ -289,6 +298,8 @@ namespace _2Facies
             InitSocketEvents();
 
             client.Emit(Packet.Headers.Participants, WsClient.Room.Id, null);
+
+            
         }
 
     }
