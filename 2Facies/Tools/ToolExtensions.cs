@@ -11,7 +11,7 @@ namespace _2Facies
 {
     public static class ToolExtensions
     {
-        public static byte[] ConvertWavToMp3(this byte[] wavFile)
+        public static byte[] ToMP3(this byte[] wavFile)
         {
 
             using (var retMs = new MemoryStream())
