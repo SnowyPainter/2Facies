@@ -8,16 +8,12 @@ namespace _2Facies
 {
     public class WsClient
     {
-        private readonly byte[] Alpha, Space;
-
         public static Packet.Room Room { get; private set; }
         [ThreadStatic]
         private static WebSocket socket = new WebSocket(Http.Request.SocketURL);
         private static Dictionary<string, EventHandler<MessageEventArgs>> events = new Dictionary<string, EventHandler<MessageEventArgs>>();
         public WsClient(Action<Packet.ErrorCode> ErrorHandler)
         {
-            Alpha = Encoding.UTF8.GetBytes("@");
-            Space = Encoding.UTF8.GetBytes(" ");
 
             socket.Connect();
 
@@ -64,31 +60,33 @@ namespace _2Facies
             
         }
 
-        public void Emit(Packet.Headers header, string room, byte[] message)
+        public void Emit(IRoomSockPacket packet)
         {
-            if (message == null)
-            {
-                message = Encoding.UTF8.GetBytes("");
-            }
-            var headerBytes = Encoding.UTF8.GetBytes(((int)header).ToString());
-            var roomBytes = Encoding.UTF8.GetBytes(room);
-            socket.Send(headerBytes.Combine(Space).Combine(roomBytes).Combine(Alpha).Combine(message));
+            socket.Send(packet.ToPacket());
         }
-        public void Create(string roomTitle, int maxParticipants, Action<MessageEventArgs> dataReturn)
-        {
-            socket.Send($"{((int)Packet.Headers.Create).ToString()}@{roomTitle} {maxParticipants}");
 
-            On("created", dataReturn);
+        public void Create(string roomTitle, int maxParticipants, Action<MessageEventArgs> createRoomResultHandler)
+        {
+            var crp = new SocketPacket.CreateRoom(roomTitle, maxParticipants);
+            socket.Send(crp.ToPacket());
+
+            On(Packet.Headers.Create.ToStringValue(), createRoomResultHandler);
             
         }
         public void Join(string roomName)
         {
-            socket.Send($"{((int)Packet.Headers.Join).ToString()} {roomName}@");
+            SocketPacket.Literal l = new SocketPacket.Literal(Packet.Headers.Join);
+            l.SetRoom(roomName);
+            
+            socket.Send(l.ToPacket());
             Room = new Packet.Room(roomName);
         }
         public void Leave(string roomName)
         {
-            socket.Send($"{((int)Packet.Headers.Leave).ToString()} {roomName}@");
+            SocketPacket.Literal l = new SocketPacket.Literal(Packet.Headers.Leave);
+            l.SetRoom(roomName);
+
+            socket.Send(l.ToPacket());
             Room = null;
         }
     }
