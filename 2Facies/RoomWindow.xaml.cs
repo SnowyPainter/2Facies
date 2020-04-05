@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace _2Facies
@@ -17,7 +18,7 @@ namespace _2Facies
     /// </summary>
     public partial class RoomWindow : Window
     {
-        public void ChatHandler(Packet.ErrorCode code)
+        private void errorSocketHandler(Packet.ErrorCode code)
         {
             switch (code)
             {
@@ -55,7 +56,7 @@ namespace _2Facies
 
             }
         }
-        private void audioHandler(float sample)
+        private void audioRecordHandler(float sample)
         {
             float converted = 100 * sample;
             Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
@@ -63,13 +64,44 @@ namespace _2Facies
                 VoiceAudioScaleBar.Value = converted;
             }));
         }
+        private void loggerHandler(string logMessage)
+        {
+            LeastLog.Text = logMessage;
+        }
+        private void RecordButtonTimer_Tick(object sender, int tickCount)
+        {
+
+            if (TimeSpan.FromSeconds(voiceChatTimerInterval * tickCount) >= voiceChatMaxTime)
+            {
+                Console.WriteLine("Interrupt");
+                audioRec.InterruptRecording();
+                (sender as DispatcherTimer).Stop();
+                return;
+            }
+            ButtonProgressAssist.SetValue(VoiceChatButton, voiceChatTimerInterval * tickCount);
+        }
+        private void SetAudioUIState(bool record)
+        {
+            if (record)
+            {
+                VoiceChatButton.Background = (SolidColorBrush)brushConverter.ConvertFromString("#FFC10F0F");
+                VoiceChatIcon.Kind = PackIconKind.Record;
+            }
+            else
+            {
+                VoiceChatButton.Background = (SolidColorBrush)brushConverter.ConvertFromString("#FF673AB7");
+                VoiceChatIcon.Kind = PackIconKind.Microphone;
+                ButtonProgressAssist.SetValue(VoiceChatButton, 0);
+            }
+            VoiceAudioScaleBar.Value = 0f;
+        }
         //--------------------------------------------------------
         //------------------Control, Object Init-----------------
         //--------------------------------------------------------
         public RoomWindow(string id)
         {
             InitializeComponent();
-            client = new WsClient(ChatHandler);
+            client = new WsClient(errorSocketHandler);
             client.Join(id);
 
             InitSocketEvents();
@@ -77,38 +109,32 @@ namespace _2Facies
             //variable init
             InitVariables();
 
-            client.Emit(Packet.Headers.Participants, WsClient.Room.Id, null);
+            client.Emit(new SocketPacket.Participants(WsClient.Room.Id));
         }
         public RoomWindow(Packet.Room data) : this(data.Id)
         {
-            InitUIElements(data);
+            if (data != null)
+            {
+                Title_Text.Text = $"2Facies {data.Title} / [{data.Max}]";
+            }
         }
+        //-------------------------------------------------------
+        //------------------------Initalize Objects--------------
+        //-------------------------------------------------------
         private void InitVariables()
         {
-            logger = new Logger(new FileInfo($@"{FileResources.LogFile}"), 
-                new Action<string>((log) => {
-                    LeastLog.Text = log;
-                }
-            ));
-            voiceChatMaxTime = TimeSpan.FromSeconds(2);
-            voiceChatTimerInterval = 0.01f; // 0.01 second
-
-            ButtonProgressAssist.SetMaximum(VoiceChatButton, voiceChatMaxTime.Seconds);
-
-            audioRec = new AudioRecord(0, 8000, 1, audioHandler);
+            logger = new Logger(new FileInfo($@"{FileResources.LogFile}"), loggerHandler);
+            brushConverter = new BrushConverter();
+            audioRec = new AudioRecord(0, 8000, 1, audioRecordHandler);
+            
             audioRec.SetTimer(voiceChatTimerInterval, RecordButtonTimer_Tick);
+            ButtonProgressAssist.SetMaximum(VoiceChatButton, voiceChatMaxTime.Seconds);
+            
+            voiceChatMaxTime = TimeSpan.FromSeconds(2);
+            voiceChatTimerInterval = 0.05f;
 
-            var brushconv = new BrushConverter();
-
-            selfColor = (SolidColorBrush)brushconv.ConvertFrom("#9951b8");
-            otherColor = (SolidColorBrush)brushconv.ConvertFrom("#bdbdbd");
-        }
-        private void InitUIElements(Packet.Room info)
-        {
-            if (info != null)
-            {
-                Title_Text.Text = $"2Facies {info.Title} / [{info.Max}]";
-            }
+            selfColor = (SolidColorBrush)brushConverter.ConvertFrom("#9951b8");
+            otherColor = (SolidColorBrush)brushConverter.ConvertFrom("#bdbdbd");
         }
         private void InitSocketEvents()
         {
@@ -152,14 +178,16 @@ namespace _2Facies
                 }));
             });
         }
-
+        //-------------------------------------------------------
+        //-------------------------Window Interactive------------
+        //-------------------------------------------------------
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (UserWindow.userData != null && WsClient.Room != null)
             {
-                var r = WsClient.Room.Id;
-                client.Leave(WsClient.Room.Id);
-                client.Emit(Packet.Headers.Participants, r, null);
+                var roomId = WsClient.Room.Id;
+                client.Leave(roomId);
+                client.Emit(new SocketPacket.Participants(roomId));
             }
 
         }
@@ -177,7 +205,7 @@ namespace _2Facies
         }
 
         //--------------------------------------------------------
-        //------------------Control, Object Init-----------------
+        //--------------------------------------------------------
         //--------------------------------------------------------
 
         //-------------------Variables Declare----------------------------
@@ -186,36 +214,25 @@ namespace _2Facies
         private WsClient client;
         private AudioRecord audioRec;
 
+        private BrushConverter brushConverter;
         private SolidColorBrush selfColor, otherColor;
-        private bool recording = false;
         
+        private bool recording = false;
         private TimeSpan voiceChatMaxTime;
         private float voiceChatTimerInterval;
 
-        //-------------------Variables----------------------------
-        private void SetVoiceChatState(bool rec)
-        {
-            var brushConv = new BrushConverter();
-            VoiceAudioScaleBar.Value = 0.0f;
-            if (rec)
-            {
-                VoiceChatButton.Background = (SolidColorBrush)brushConv.ConvertFromString("#FFC10F0F");
-                VoiceChatIcon.Kind = PackIconKind.Record;
-            }
-            else
-            {
-                VoiceChatButton.Background = (SolidColorBrush)brushConv.ConvertFromString("#FF673AB7");
-                VoiceChatIcon.Kind = PackIconKind.Microphone;
-                ButtonProgressAssist.SetValue(VoiceChatButton, 0);
-            }
-        }
-        //Chat
+        private Point currentPoint;
+        private SolidColorBrush currentForeColor = Brushes.Yellow;
+        private double currentStrokeThickness = 5;
+        private Polyline polyLine;
+        //-------------------/Variables----------------------------
+
         private void ChatTextBox_KeyUp(object sender, KeyEventArgs e)
         {
             var text = ChatTextBox.Text;
             if (text != "" && e.Key == Key.Enter)
             {
-                client.Emit(Packet.Headers.Broadcast, WsClient.Room.Id, Encoding.UTF8.GetBytes(text));
+                client.Emit(new SocketPacket.Broadcast(WsClient.Room.Id, text));
                 var msg = new Resource.ChatMessage
                 {
                     Message = text,
@@ -229,8 +246,9 @@ namespace _2Facies
                 ChatScrollViewer.ScrollToBottom();
             }
         }
-
-        //Record Voicechat
+        //***********************************
+        //Record Voicechat / NONE COMPLETE
+        //***********************************
         private void VoiceChatButton_Click(object sender, RoutedEventArgs e)
         {
             recording = !recording;
@@ -246,61 +264,69 @@ namespace _2Facies
                 if (stream != null)
                 {
                     var pcmAudio = stream.ToByteArray();
-                    
                     if(pcmAudio.Length < 3000)
-                    {
                         logger.Log($"MP3 Convert Failed(Too Short PCM).AudioLen:{pcmAudio.Length}", true);
-                    }
                     else
                     {
                         var audio = Encoding.UTF8.GetBytes(Convert.ToBase64String(pcmAudio.ToMP3()));
                         if (audio.Length < 10000)
-                        {
-                            client.Emit(Packet.Headers.BroadcastAudio, WsClient.Room.Id, audio);
-                        }
+                            client.Emit(new SocketPacket.BroadcastAudio(WsClient.Room.Id, audio));
                         else
-                        {
                             logger.Log($"Too Large to Send.AudioLen:{audio.Length}", true);
-                        }
                     }
                     
                 }
             }
 
-            SetVoiceChatState(recording);
+            SetAudioUIState(recording);
+        }
+        //***********************************
+        
+        private void CanvasDraw_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+            {
+                currentPoint = e.GetPosition(DrawCanvas);
+
+                polyLine = new Polyline();
+                polyLine.Stroke = currentForeColor;
+                polyLine.StrokeThickness = currentStrokeThickness;
+
+                DrawCanvas.Children.Add(polyLine);
+            }
+        }
+        private void CanvasDraw_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                polyLine = (Polyline)DrawCanvas.Children[DrawCanvas.Children.Count-1];
+                polyLine.Points.Add(e.GetPosition(DrawCanvas));
+            }
+        }
+        private void CanvasDraw_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Released)
+            {
+                
+            }
         }
 
-        private void RecordButtonTimer_Tick(object sender, int tickCount)
-        {
-            
-            if (TimeSpan.FromSeconds(voiceChatTimerInterval * tickCount) >= voiceChatMaxTime)
-            {
-                Console.WriteLine("Interrupt");
-                audioRec.InterruptRecording();
-                (sender as DispatcherTimer).Stop();
-                return;
-            }
-            ButtonProgressAssist.SetValue(VoiceChatButton, voiceChatTimerInterval * tickCount);
-        }
         public RoomWindow() //testing
         {
             InitializeComponent();
 
             InitVariables();
 
-            client = new WsClient(ChatHandler);
+            client = new WsClient(errorSocketHandler);
             client.Create("Title", 3, (msge) =>
             {
-
+                
             });
 
             client.Join("0");
             InitSocketEvents();
 
-            client.Emit(Packet.Headers.Participants, WsClient.Room.Id, null);
-
-            
+            client.Emit(new SocketPacket.Participants(WsClient.Room.Id));
         }
-
     }
 }
