@@ -10,6 +10,7 @@ namespace _2Facies
     {
         Packet.Headers Header { get; }
         string RoomId { get; }
+        string UserId { get; }
         byte[] ToPacket();
     }
     public static class SocketPacket
@@ -17,9 +18,10 @@ namespace _2Facies
         public class Broadcast : IRoomSockPacket
         {
             public string RoomId { get; private set; }      
+            public string UserId { get; private set; }
             public Packet.Headers Header { get; private set; }
             public string Body { get; private set; }
-            public Broadcast(string roomId, string message)
+            public Broadcast(string roomId, string userId,string message)
             {
                 if(message == null)
                     message = "";
@@ -28,21 +30,23 @@ namespace _2Facies
 
                 Header = Packet.Headers.Broadcast;
                 RoomId = roomId;
+                UserId = userId;
                 Body = message;
             }
             
             public byte[] ToPacket()
             {
-                var packet = $"{Header.ToStringValue()} {RoomId}@{Body}";
+                var packet = $"{Header.ToStringValue()} {RoomId}@{UserId}@{Body}";
                 return Encoding.UTF8.GetBytes(packet);
             }
         }
         public class BroadcastAudio : IRoomSockPacket
         {
             public string RoomId { get; private set; }
+            public string UserId { get; private set; }
             public Packet.Headers Header { get; private set; }
             public byte[] Audio { get; private set; }
-            public BroadcastAudio(string targetRoomId, byte[] audio)
+            public BroadcastAudio(string targetRoomId,string userId, byte[] audio)
             {
                 if (audio == null)
                 {
@@ -54,20 +58,22 @@ namespace _2Facies
                 }
                 Header = Packet.Headers.BroadcastAudio;
                 RoomId = targetRoomId;
+                UserId = userId;
                 Audio = audio;
             }
 
             public byte[] ToPacket()
             {
-                var packet = $"{Header.ToStringValue()} {RoomId}@{Audio}";
+                var packet = $"{Header.ToStringValue()} {RoomId}@{UserId}@{Audio}";
                 return Encoding.UTF8.GetBytes(packet);
             }
         }
         public class Participants : IRoomSockPacket
         {
             public string RoomId { get; private set; }
+            public string UserId { get; private set; }
             public Packet.Headers Header { get; private set; }
-            public Participants(string targetRoomId)
+            public Participants(string targetRoomId, string userId)
             {
                 if (targetRoomId == null)
                 {
@@ -75,11 +81,12 @@ namespace _2Facies
                 }
                 Header = Packet.Headers.Participants;
                 RoomId = targetRoomId;
+                UserId = userId;
             }
 
             public byte[] ToPacket()
             {
-                var packet = $"{Header.ToStringValue()} {RoomId}@";
+                var packet = $"{Header.ToStringValue()} {RoomId}@{UserId}@";
                 return Encoding.UTF8.GetBytes(packet);
             }
         }
@@ -101,13 +108,14 @@ namespace _2Facies
 
             public byte[] ToPacket()
             {
-                var packet = $"{Header.ToStringValue()}@{Title} {MaxParticipants}";
+                var packet = $"{Header.ToStringValue()}@@{Title} {MaxParticipants}";
                 return Encoding.UTF8.GetBytes(packet);
             }
         }
         public class Literal:IRoomSockPacket
         {
             public Packet.Headers Header { get; private set; }
+            public string UserId { get; private set; }
             public string RoomId { get; private set; }
             public List<string> Content { get; private set; }
             public Literal(Packet.Headers header)
@@ -134,7 +142,7 @@ namespace _2Facies
                 }
                 contents = contents.Substring(0, contents.Length - 1);
 
-                string constant = $"{Header.ToStringValue()}{(RoomId != "" ? " " + RoomId : "")}@{contents}";
+                string constant = $"{Header.ToStringValue()}{(RoomId != "" ? " " + RoomId : "")}@@{contents}";
                 return Encoding.UTF8.GetBytes(constant);
             }
         }

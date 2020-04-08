@@ -1,10 +1,12 @@
 ﻿using _2Facies.Resource;
 using MaterialDesignThemes.Wpf;
+using Microsoft.MixedReality.WebRTC;
 using NAudio.Wave;
 using System;
 using System.IO;
 using System.Media;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -56,9 +58,9 @@ namespace _2Facies
 
             }
         }
-        private void audioRecordHandler(float sample)
+        private void audioRecordHandler(byte[] buffer, float maxSample)
         {
-            float converted = 100 * sample;
+            float converted = 100 * maxSample;
             Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
             {
                 VoiceAudioScaleBar.Value = converted;
@@ -109,7 +111,7 @@ namespace _2Facies
             //variable init
             InitVariables();
 
-            client.Emit(new SocketPacket.Participants(WsClient.Room.Id));
+            client.Emit(new SocketPacket.Participants(WsClient.Room.Id, UserWindow.userData.Name));
         }
         public RoomWindow(Packet.Room data) : this(data.Id)
         {
@@ -126,10 +128,10 @@ namespace _2Facies
             logger = new Logger(new FileInfo($@"{FileResources.LogFile}"), loggerHandler);
             brushConverter = new BrushConverter();
             audioRec = new AudioRecord(0, 8000, 1, audioRecordHandler);
-            
+
             audioRec.SetTimer(voiceChatTimerInterval, RecordButtonTimer_Tick);
             ButtonProgressAssist.SetMaximum(VoiceChatButton, voiceChatMaxTime.Seconds);
-            
+
             voiceChatMaxTime = TimeSpan.FromSeconds(2);
             voiceChatTimerInterval = 0.05f;
 
@@ -140,21 +142,26 @@ namespace _2Facies
         {
             client.On(Packet.Headers.Broadcast.ToStringValue(), (ev) =>
             {
-                var data = ev.Data.Split('@')[1];
+                var splited = ev.Data.Split('@');
+                var message = splited[2];
+                var writer = splited[1];
 
-                Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
-                    var msg = new Resource.ChatMessage
+                    var msg = new ChatMessage
                     {
-                        Message = data,
+                        Message = $"[{writer}] {message}",
                         BackColor = otherColor,
                         TextAlign = TextAlignment.Left,
                         HorizontalAlign = HorizontalAlignment.Left
                     };
+                    Console.WriteLine(ev.Data);
                     ChatPanel.Children.Add(msg);
 
                 }));
             });
+
+            //********************FIXED MUST**
             client.On(Packet.Headers.BroadcastAudio.ToStringValue(), (ev) =>
             {
                 var data = ev.Data.Split('@')[1];
@@ -165,12 +172,13 @@ namespace _2Facies
                 var waveOut = new WaveOutEvent();
                 waveOut.Init(mp3Reader);
                 waveOut.Play();
-                
+
             });
             //update participants
             client.On(Packet.Headers.Participants.ToStringValue(), (ev) =>
             {
-                var participants = ev.Data.Split('@')[1];
+                var participants = int.Parse(ev.Data.Split('@')[1]);
+                currentParticipants = participants;
 
                 Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
@@ -187,7 +195,7 @@ namespace _2Facies
             {
                 var roomId = WsClient.Room.Id;
                 client.Leave(roomId);
-                client.Emit(new SocketPacket.Participants(roomId));
+                client.Emit(new SocketPacket.Participants(roomId, UserWindow.userData.Name));
             }
 
         }
@@ -203,7 +211,6 @@ namespace _2Facies
         {
             DragMove();
         }
-
         //--------------------------------------------------------
         //--------------------------------------------------------
         //--------------------------------------------------------
@@ -216,7 +223,9 @@ namespace _2Facies
 
         private BrushConverter brushConverter;
         private SolidColorBrush selfColor, otherColor;
-        
+
+        private int currentParticipants;
+
         private bool recording = false;
         private TimeSpan voiceChatMaxTime;
         private float voiceChatTimerInterval;
@@ -232,8 +241,8 @@ namespace _2Facies
             var text = ChatTextBox.Text;
             if (text != "" && e.Key == Key.Enter)
             {
-                client.Emit(new SocketPacket.Broadcast(WsClient.Room.Id, text));
-                var msg = new Resource.ChatMessage
+                client.Emit(new SocketPacket.Broadcast(WsClient.Room.Id, UserWindow.userData.Name, text));
+                var msg = new ChatMessage
                 {
                     Message = text,
                     BackColor = selfColor,
@@ -247,7 +256,7 @@ namespace _2Facies
             }
         }
         //***********************************
-        //Record Voicechat / NONE COMPLETE
+        //Record Voicechat / NONE COMPLETE / -> WEB RTC - ing
         //***********************************
         private void VoiceChatButton_Click(object sender, RoutedEventArgs e)
         {
@@ -270,7 +279,7 @@ namespace _2Facies
                     {
                         var audio = Encoding.UTF8.GetBytes(Convert.ToBase64String(pcmAudio.ToMP3()));
                         if (audio.Length < 10000)
-                            client.Emit(new SocketPacket.BroadcastAudio(WsClient.Room.Id, audio));
+                            client.Emit(new SocketPacket.BroadcastAudio(WsClient.Room.Id, UserWindow.userData.Name, audio));
                         else
                             logger.Log($"Too Large to Send.AudioLen:{audio.Length}", true);
                     }
@@ -281,7 +290,7 @@ namespace _2Facies
             SetAudioUIState(recording);
         }
         //***********************************
-        
+
         private void CanvasDraw_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
@@ -299,7 +308,7 @@ namespace _2Facies
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                polyLine = (Polyline)DrawCanvas.Children[DrawCanvas.Children.Count-1];
+                polyLine = (Polyline)DrawCanvas.Children[DrawCanvas.Children.Count - 1];
                 polyLine.Points.Add(e.GetPosition(DrawCanvas));
             }
         }
@@ -307,7 +316,18 @@ namespace _2Facies
         {
             if (e.ButtonState == MouseButtonState.Released)
             {
-                
+
+            }
+        }
+
+        private async void Window_Initialized(object sender, EventArgs e)
+        {
+            var deviceList = await PeerConnection.GetVideoCaptureDevicesAsync();
+
+            // For example, print them to the standard output
+            foreach (var device in deviceList)
+            {
+                MessageBox.Show($"Found webcam {device.name} (id: {device.id})");
             }
         }
 
@@ -317,16 +337,17 @@ namespace _2Facies
 
             InitVariables();
 
+            UserWindow.userData = new Packet.DataPublic("12", "James", "S@g");
             client = new WsClient(errorSocketHandler);
             client.Create("Title", 3, (msge) =>
             {
-                
+                //Console.WriteLine(msge.Data);
             });
 
             client.Join("0");
             InitSocketEvents();
 
-            client.Emit(new SocketPacket.Participants(WsClient.Room.Id));
+            client.Emit(new SocketPacket.Participants(WsClient.Room.Id, UserWindow.userData.Name));
         }
     }
 }

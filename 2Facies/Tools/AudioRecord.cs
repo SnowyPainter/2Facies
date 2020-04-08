@@ -12,7 +12,7 @@ namespace _2Facies
 {
     public class AudioRecord
     {
-        private void waveMaxSample(WaveInEventArgs e, Action<float> handler)
+        private void waveMaxSample(WaveInEventArgs e, Action<byte[],float> handler)
         {
             if (waveWriter != null)
             {
@@ -29,8 +29,8 @@ namespace _2Facies
                 if (sample32 < 0) sample32 = -sample32;
                 if (sample32 > maxRecorded) maxRecorded = sample32;
             }
-
-            handler(maxRecorded);
+            
+            handler(e.Buffer,maxRecorded);
         }
         private void OnRecordingStopped(object sender, StoppedEventArgs e)
         {
@@ -51,7 +51,7 @@ namespace _2Facies
         private int tickCount;
         private float tickInterval;
 
-        public AudioRecord(int device, int sampleRate, int channels, Action<float> dataAvailableHandler)
+        public AudioRecord(int device, int sampleRate, int channels, Action<byte[],float> dataAvailableHandler)
         {
             int waveInDevices = WaveIn.DeviceCount;
             if (waveInDevices < 1)

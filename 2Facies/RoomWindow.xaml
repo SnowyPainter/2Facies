@@ -6,7 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:_2Facies.Resource"
         mc:Ignorable="d"
-        Title="RoomWindow" Height="700" Width="1000" MinHeight="500" MinWidth="800" WindowStyle="None" Closing="Window_Closing">
+        Title="RoomWindow" Height="700" Width="1000" MinHeight="500" MinWidth="800" WindowStyle="None" Initialized="Window_Initialized" Closing="Window_Closing">
     <Grid Background="#FF1B1B1B">
         <Grid x:Name="TopMenuNavigation" VerticalAlignment="Top" Background="#FF232628" MouseDown="NavigationBar_DragMove" Width="{Binding ElementName=canv, Path=ActualWidth}" Height="50">
             <StackPanel Orientation="Horizontal" Height="50" VerticalAlignment="Center" HorizontalAlignment="Right">
@@ -38,6 +38,7 @@
                     <TextBlock x:Name="LeastLog" Foreground="#FF747474" FontSize="16" Margin="10,3,12,0"/>
                 </Grid>
                 <Grid Margin="0,0,0, 30">
+                    <StackPanel x:Name="CanvasListPanel" Orientation="Vertical" Margin="0,0,0,560"></StackPanel>
                     <Canvas Background="#FFB8B8B8" x:Name="DrawCanvas" MouseUp="CanvasDraw_MouseUp" MouseDown="CanvasDraw_MouseDown" MouseMove="CanvasDraw_MouseMove" Margin="0,50,0,0">
 
                     </Canvas>
