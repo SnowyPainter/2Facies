@@ -1,8 +1,12 @@
 ﻿using _2Facies.Resource;
+using _2Facies.RTC;
+using _2Facies.Socket;
 using MaterialDesignThemes.Wpf;
 using Microsoft.MixedReality.WebRTC;
 using NAudio.Wave;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Media;
 using System.Text;
@@ -42,7 +46,7 @@ namespace _2Facies
                     break;
                 case Packet.ErrorCode.RoomFull:
                     logger.Log("Error Room which connecting was filled with people", true);
-                    Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                    Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                     {
                         this.Close();
                     }));
@@ -50,7 +54,7 @@ namespace _2Facies
                 case Packet.ErrorCode.RoomNotFound:
                     MessageBox.Show("방이 존재하지 않습니다.");
                     logger.Log("Error SocketRoom Not Exist", true);
-                    Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                    Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                     {
                         this.Close();
                     }));
@@ -58,44 +62,14 @@ namespace _2Facies
 
             }
         }
-        private void audioRecordHandler(byte[] buffer, float maxSample)
+        private void sampleHandler(SampleRTA sample)
         {
-            float converted = 100 * maxSample;
-            Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-            {
-                VoiceAudioScaleBar.Value = converted;
-            }));
+            if(!microphoneMute)
+                client.Emit(new SocketPacket.BroadcastAudio(WsClient.Room.Id, UserWindow.UserData.Id, sample.Sample));
         }
         private void loggerHandler(string logMessage)
         {
             LeastLog.Text = logMessage;
-        }
-        private void RecordButtonTimer_Tick(object sender, int tickCount)
-        {
-
-            if (TimeSpan.FromSeconds(voiceChatTimerInterval * tickCount) >= voiceChatMaxTime)
-            {
-                Console.WriteLine("Interrupt");
-                audioRec.InterruptRecording();
-                (sender as DispatcherTimer).Stop();
-                return;
-            }
-            ButtonProgressAssist.SetValue(VoiceChatButton, voiceChatTimerInterval * tickCount);
-        }
-        private void SetAudioUIState(bool record)
-        {
-            if (record)
-            {
-                VoiceChatButton.Background = (SolidColorBrush)brushConverter.ConvertFromString("#FFC10F0F");
-                VoiceChatIcon.Kind = PackIconKind.Record;
-            }
-            else
-            {
-                VoiceChatButton.Background = (SolidColorBrush)brushConverter.ConvertFromString("#FF673AB7");
-                VoiceChatIcon.Kind = PackIconKind.Microphone;
-                ButtonProgressAssist.SetValue(VoiceChatButton, 0);
-            }
-            VoiceAudioScaleBar.Value = 0f;
         }
         //--------------------------------------------------------
         //------------------Control, Object Init-----------------
@@ -104,14 +78,14 @@ namespace _2Facies
         {
             InitializeComponent();
             client = new WsClient(errorSocketHandler);
-            client.Join(id);
+            client.Join(id, UserWindow.UserData.Id);
 
             InitSocketEvents();
 
             //variable init
             InitVariables();
 
-            client.Emit(new SocketPacket.Participants(WsClient.Room.Id, UserWindow.userData.Name));
+            client.Emit(new SocketPacket.Participants(WsClient.Room.Id, UserWindow.UserData.Name));
         }
         public RoomWindow(Packet.Room data) : this(data.Id)
         {
@@ -126,26 +100,24 @@ namespace _2Facies
         private void InitVariables()
         {
             logger = new Logger(new FileInfo($@"{FileResources.LogFile}"), loggerHandler);
+            
+            rta = new SharpRTA();
+            rta.Start(sampleHandler);
+
+            microphoneMute = true;
+
             brushConverter = new BrushConverter();
-            audioRec = new AudioRecord(0, 8000, 1, audioRecordHandler);
-
-            audioRec.SetTimer(voiceChatTimerInterval, RecordButtonTimer_Tick);
-            ButtonProgressAssist.SetMaximum(VoiceChatButton, voiceChatMaxTime.Seconds);
-
-            voiceChatMaxTime = TimeSpan.FromSeconds(2);
-            voiceChatTimerInterval = 0.05f;
 
             selfColor = (SolidColorBrush)brushConverter.ConvertFrom("#9951b8");
             otherColor = (SolidColorBrush)brushConverter.ConvertFrom("#bdbdbd");
         }
         private void InitSocketEvents()
         {
-            client.On(Packet.Headers.Broadcast.ToStringValue(), (ev) =>
+            client.On(Headers.Broadcast.ToStringValue(), (packet) =>
             {
-                var splited = ev.Data.Split('@');
-                var message = splited[2];
-                var writer = splited[1];
-
+                var message = packet.Body;
+                var writer = packet.Caster;
+                //Debug.WriteLine($"ID:{packet.Caster}, BODY:{packet.Body}");
                 Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
                     var msg = new ChatMessage
@@ -155,31 +127,28 @@ namespace _2Facies
                         TextAlign = TextAlignment.Left,
                         HorizontalAlign = HorizontalAlignment.Left
                     };
-                    Console.WriteLine(ev.Data);
+                    Console.WriteLine(packet.Body);
                     ChatPanel.Children.Add(msg);
 
                 }));
             });
 
             //********************FIXED MUST**
-            client.On(Packet.Headers.BroadcastAudio.ToStringValue(), (ev) =>
+            client.On(Headers.BroadcastAudio.ToStringValue(), (packet) =>
             {
-                var data = ev.Data.Split('@')[1];
-                Console.WriteLine(data.Length);
+                var data = packet.Body;
+                Debug.WriteLine(data);
                 Stream ms = new MemoryStream(Convert.FromBase64String(data));
 
-                var mp3Reader = new Mp3FileReader(ms);
-                var waveOut = new WaveOutEvent();
-                waveOut.Init(mp3Reader);
-                waveOut.Play();
+                rta.Keep(ms.ToByteArray());
 
             });
             //update participants
-            client.On(Packet.Headers.Participants.ToStringValue(), (ev) =>
+            client.On(Headers.Participants.ToStringValue(), (packet) =>
             {
-                var participants = int.Parse(ev.Data.Split('@')[1]);
+                var participants = int.Parse(packet.Body);
                 currentParticipants = participants;
-
+                Debug.WriteLine($"Participatns Caster:{packet.Caster}, BODY:{packet.Body}");
                 Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
                     ParticipantsText.Text = $"{participants}명 접속중";
@@ -191,11 +160,16 @@ namespace _2Facies
         //-------------------------------------------------------
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (UserWindow.userData != null && WsClient.Room != null)
+            if(rta.Active)
+            {
+                rta.Stop();
+            }
+            if (UserWindow.UserData != null && WsClient.Room != null)
             {
                 var roomId = WsClient.Room.Id;
-                client.Leave(roomId);
-                client.Emit(new SocketPacket.Participants(roomId, UserWindow.userData.Name));
+                
+                client.Leave(roomId, UserWindow.UserData.Id);
+                client.Emit(new SocketPacket.Participants(roomId, UserWindow.UserData.Name));
             }
 
         }
@@ -219,16 +193,13 @@ namespace _2Facies
 
         private Logger logger;
         private WsClient client;
-        private AudioRecord audioRec;
+        private SharpRTA rta;
 
         private BrushConverter brushConverter;
         private SolidColorBrush selfColor, otherColor;
 
         private int currentParticipants;
-
-        private bool recording = false;
-        private TimeSpan voiceChatMaxTime;
-        private float voiceChatTimerInterval;
+        private bool microphoneMute;
 
         private Point currentPoint;
         private SolidColorBrush currentForeColor = Brushes.Yellow;
@@ -241,7 +212,7 @@ namespace _2Facies
             var text = ChatTextBox.Text;
             if (text != "" && e.Key == Key.Enter)
             {
-                client.Emit(new SocketPacket.Broadcast(WsClient.Room.Id, UserWindow.userData.Name, text));
+                client.Emit(new SocketPacket.Broadcast(WsClient.Room.Id, UserWindow.UserData.Name, text));
                 var msg = new ChatMessage
                 {
                     Message = text,
@@ -260,34 +231,18 @@ namespace _2Facies
         //***********************************
         private void VoiceChatButton_Click(object sender, RoutedEventArgs e)
         {
-            recording = !recording;
-
-            if (recording)
+            if (microphoneMute)
             {
-                audioRec.Start();
-            }
+                VoiceChatButton.Background = (SolidColorBrush)brushConverter.ConvertFromString("#FFC10F0F");
+                VoiceChatIcon.Kind = PackIconKind.Record;
+                microphoneMute = false;
+            } 
             else
-            {
-                var stream = audioRec.Stop();
-
-                if (stream != null)
-                {
-                    var pcmAudio = stream.ToByteArray();
-                    if(pcmAudio.Length < 3000)
-                        logger.Log($"MP3 Convert Failed(Too Short PCM).AudioLen:{pcmAudio.Length}", true);
-                    else
-                    {
-                        var audio = Encoding.UTF8.GetBytes(Convert.ToBase64String(pcmAudio.ToMP3()));
-                        if (audio.Length < 10000)
-                            client.Emit(new SocketPacket.BroadcastAudio(WsClient.Room.Id, UserWindow.userData.Name, audio));
-                        else
-                            logger.Log($"Too Large to Send.AudioLen:{audio.Length}", true);
-                    }
-                    
-                }
+            {   
+                VoiceChatButton.Background = (SolidColorBrush)brushConverter.ConvertFromString("#FF673AB7");
+                VoiceChatIcon.Kind = PackIconKind.Microphone;
+                microphoneMute = true;
             }
-
-            SetAudioUIState(recording);
         }
         //***********************************
 
@@ -320,15 +275,20 @@ namespace _2Facies
             }
         }
 
-        private async void Window_Initialized(object sender, EventArgs e)
+        private void Window_Initialized(object sender, EventArgs e)
         {
-            var deviceList = await PeerConnection.GetVideoCaptureDevicesAsync();
-
-            // For example, print them to the standard output
-            foreach (var device in deviceList)
+            /*
+            var pc = new PeerConnection();
+            var config = new PeerConnectionConfiguration
             {
-                MessageBox.Show($"Found webcam {device.name} (id: {device.id})");
-            }
+                IceServers = new List<IceServer> {
+                    new IceServer{ Urls = { "stun:stun.l.google.com:19302" } 
+                   }
+                }
+            };
+            await pc.InitializeAsync(config);
+            await pc.AddLocalAudioTrackAsync();
+            */
         }
 
         public RoomWindow() //testing
@@ -337,17 +297,17 @@ namespace _2Facies
 
             InitVariables();
 
-            UserWindow.userData = new Packet.DataPublic("12", "James", "S@g");
+            UserWindow.UserData = new Packet.DataPublic("12", "James", "S@g");
             client = new WsClient(errorSocketHandler);
             client.Create("Title", 3, (msge) =>
             {
-                //Console.WriteLine(msge.Data);
+                Debug.WriteLine(msge.Body);
             });
 
-            client.Join("0");
+            client.Join("0", UserWindow.UserData.Id);
             InitSocketEvents();
 
-            client.Emit(new SocketPacket.Participants(WsClient.Room.Id, UserWindow.userData.Name));
+            client.Emit(new SocketPacket.Participants(WsClient.Room.Id, UserWindow.UserData.Name));
         }
     }
 }

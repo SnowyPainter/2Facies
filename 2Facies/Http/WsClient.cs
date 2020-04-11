@@ -1,5 +1,7 @@
-﻿using System;
+﻿using _2Facies.Socket;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using WebSocketSharp;
@@ -9,7 +11,7 @@ namespace _2Facies
     public class WsClient
     {
         public static Packet.Room Room { get; private set; }
-        [ThreadStatic]
+        //[ThreadStatic]
         private static WebSocket socket = new WebSocket(Http.Request.SocketURL);
         private static Dictionary<string, EventHandler<MessageEventArgs>> events = new Dictionary<string, EventHandler<MessageEventArgs>>();
         public WsClient(Action<Packet.ErrorCode> ErrorHandler)
@@ -17,11 +19,13 @@ namespace _2Facies
 
             socket.Connect();
 
-            On("error", (e) =>
+            On(Headers.Error.ToStringValue(), (packet) =>
             {
                 int codeValue;
 
-                if (!int.TryParse(e.Data.Split('@')[1], out codeValue) || !Enum.IsDefined(typeof(Packet.ErrorCode), codeValue))
+                //Debug.WriteLine("Error Packet.Body : "+packet.Body);
+
+                if (!int.TryParse(packet.Body, out codeValue) || !Enum.IsDefined(typeof(Packet.ErrorCode), codeValue))
                 {
                     ErrorHandler(Packet.ErrorCode.WrongCode);
                     return;
@@ -42,7 +46,7 @@ namespace _2Facies
                 ErrorHandler(code);
             });
         }
-        public void On(string eventName, Action<MessageEventArgs> action)
+        public void On(string eventName, Action<IReceivePacket> receiver)
         {
             if(events.ContainsKey(eventName))
             {
@@ -52,41 +56,42 @@ namespace _2Facies
 
             events.Add(eventName, (sender, e) =>
             {
-                if (e.Data.Split('@')[0] == eventName)
-                    action(e);
+                var splited = e.Data.Split('@');
+                //Debug.WriteLine($"Header: {splited[0]} == {eventName} : {splited[0] == eventName}");
+                if (splited[0] == eventName)
+                {
+                    var receive = new SocketPacket.Receive(splited[1], splited[2]);
+
+                    receiver(receive);
+                }
             });
 
             socket.OnMessage += events[eventName];
             
         }
 
-        public void Emit(IRoomSockPacket packet)
+        public void Emit(ISendPacket packet)
         {
+            Debug.WriteLine(packet.ToPacket().Length);
             socket.Send(packet.ToPacket());
         }
 
-        public void Create(string roomTitle, int maxParticipants, Action<MessageEventArgs> createRoomResultHandler)
+        public void Create(string roomTitle, int maxParticipants, Action<IReceivePacket> createRoomResultHandler)
         {
             var crp = new SocketPacket.CreateRoom(roomTitle, maxParticipants);
             socket.Send(crp.ToPacket());
 
-            On(Packet.Headers.Create.ToStringValue(), createRoomResultHandler);
+            On(Headers.Create.ToStringValue(), createRoomResultHandler);
             
         }
-        public void Join(string roomName)
+        public void Join(string roomName, string joiner)
         {
-            SocketPacket.Literal l = new SocketPacket.Literal(Packet.Headers.Join);
-            l.SetRoom(roomName);
-            
-            socket.Send(l.ToPacket());
+            socket.Send(new SocketPacket.Join(roomName, joiner).ToPacket());
             Room = new Packet.Room(roomName);
         }
-        public void Leave(string roomName)
+        public void Leave(string roomName, string leaver)
         {
-            SocketPacket.Literal l = new SocketPacket.Literal(Packet.Headers.Leave);
-            l.SetRoom(roomName);
-
-            socket.Send(l.ToPacket());
+            socket.Send(new SocketPacket.Leave(roomName, leaver).ToPacket());
             Room = null;
         }
     }

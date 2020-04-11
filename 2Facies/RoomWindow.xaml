@@ -27,7 +27,7 @@
                     <StackPanel x:Name="ChatPanel" Margin="10,10,10,0" Background="#FF9C9C9C" Orientation="Vertical"/>
                 </ScrollViewer>
                 <TextBox x:Name="ChatTextBox" HorizontalAlignment="Center" Height="40" Margin="13,0,62,8" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="225" FontSize="20" Foreground="#FFECECEC" BorderBrush="#89FFFFFF" AcceptsReturn="False" KeyUp="ChatTextBox_KeyUp"/>
-                <Button x:Name="VoiceChatButton" materialDesign:ButtonAssist.CornerRadius="30" materialDesign:ButtonProgressAssist.IsIndicatorVisible="True" materialDesign:ButtonProgressAssist.Value="0" materialDesign:ButtonProgressAssist.Maximum="99" Style="{StaticResource MaterialDesignFloatingActionButton}"
+                <Button x:Name="VoiceChatButton" materialDesign:ButtonAssist.CornerRadius="30"
                         HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="45" Height="42" Margin="0,0,7,5" Click="VoiceChatButton_Click" Foreground="#DDFFFFFF" BorderBrush="{x:Null}" Background="#FF673AB7">
                     <materialDesign:PackIcon x:Name="VoiceChatIcon" Kind="Microphone" Height="34" HorizontalAlignment="Center" VerticalAlignment="Center" Width="31"/>
                 </Button>

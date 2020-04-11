@@ -33,17 +33,6 @@ namespace _2Facies
             IncorrectTypeError = 002
         };
 
-        public enum Headers
-        {
-            Error = 00,
-            Join = 11,
-            Leave = 12,
-            Create = 13,
-            Broadcast = 21,
-            BroadcastAudio = 22,
-            Participants = 23,
-        }
-
         public class Room : IPacket
         {
             public string Id { get; set; }

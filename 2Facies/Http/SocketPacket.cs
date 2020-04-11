@@ -4,22 +4,48 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace _2Facies
+namespace _2Facies.Socket
 {
-    public interface IRoomSockPacket
+    public interface ISendPacket
     {
-        Packet.Headers Header { get; }
+        Headers Header { get; }
         string RoomId { get; }
         string UserId { get; }
         byte[] ToPacket();
     }
+    public interface IReceivePacket
+    {
+        string Caster { get; }
+        string Body { get; }
+    }
+    public enum Headers
+    {
+        Error = 0,
+        Join = 11,
+        Leave = 12,
+        Create = 13,
+        Broadcast = 21,
+        BroadcastAudio = 22,
+        Participants = 23,
+    }
     public static class SocketPacket
     {
-        public class Broadcast : IRoomSockPacket
+        public class Receive: IReceivePacket
+        {
+            public string Caster { get; private set; }
+            public string Body { get; private set; }
+            public Receive(string caster, string body)
+            {
+                Caster = caster;
+                Body = body;
+            }
+        }
+
+        public class Broadcast : ISendPacket
         {
             public string RoomId { get; private set; }      
             public string UserId { get; private set; }
-            public Packet.Headers Header { get; private set; }
+            public Headers Header { get; private set; }
             public string Body { get; private set; }
             public Broadcast(string roomId, string userId,string message)
             {
@@ -28,7 +54,7 @@ namespace _2Facies
                 if(roomId == null)
                     throw new Exception("RoomID Must be not to be NULL");
 
-                Header = Packet.Headers.Broadcast;
+                Header = Headers.Broadcast;
                 RoomId = roomId;
                 UserId = userId;
                 Body = message;
@@ -40,11 +66,11 @@ namespace _2Facies
                 return Encoding.UTF8.GetBytes(packet);
             }
         }
-        public class BroadcastAudio : IRoomSockPacket
+        public class BroadcastAudio : ISendPacket
         {
             public string RoomId { get; private set; }
             public string UserId { get; private set; }
-            public Packet.Headers Header { get; private set; }
+            public Headers Header { get; private set; }
             public byte[] Audio { get; private set; }
             public BroadcastAudio(string targetRoomId,string userId, byte[] audio)
             {
@@ -56,7 +82,7 @@ namespace _2Facies
                 {
                     throw new Exception("RoomID Must be not to be NULL");
                 }
-                Header = Packet.Headers.BroadcastAudio;
+                Header = Headers.BroadcastAudio;
                 RoomId = targetRoomId;
                 UserId = userId;
                 Audio = audio;
@@ -64,22 +90,22 @@ namespace _2Facies
 
             public byte[] ToPacket()
             {
-                var packet = $"{Header.ToStringValue()} {RoomId}@{UserId}@{Audio}";
+                var packet = $"{Header.ToStringValue()} {RoomId}@{UserId}@{Convert.ToBase64String(Audio)}";
                 return Encoding.UTF8.GetBytes(packet);
             }
         }
-        public class Participants : IRoomSockPacket
+        public class Participants : ISendPacket
         {
             public string RoomId { get; private set; }
             public string UserId { get; private set; }
-            public Packet.Headers Header { get; private set; }
+            public Headers Header { get; private set; }
             public Participants(string targetRoomId, string userId)
             {
                 if (targetRoomId == null)
                 {
                     throw new Exception("RoomID Must be not to be NULL");
                 }
-                Header = Packet.Headers.Participants;
+                Header = Headers.Participants;
                 RoomId = targetRoomId;
                 UserId = userId;
             }
@@ -94,14 +120,14 @@ namespace _2Facies
         {
             public string Title { get; private set; }
             public int MaxParticipants { get; private set; }
-            public Packet.Headers Header { get; private set; }
+            public Headers Header { get; private set; }
             public CreateRoom(string title, int maxParticipants)
             {
                 if (title == null)
                 {
                     title = "";
                 }
-                Header = Packet.Headers.Create;
+                Header = Headers.Create;
                 Title = title;
                 MaxParticipants = maxParticipants;
             }
@@ -112,13 +138,48 @@ namespace _2Facies
                 return Encoding.UTF8.GetBytes(packet);
             }
         }
-        public class Literal:IRoomSockPacket
+        public class Join : ISendPacket
         {
-            public Packet.Headers Header { get; private set; }
+            public Headers Header { get; private set; }
+            public string RoomId { get; private set; }
+            public string UserId { get; private set; }
+            public Join(string room, string joiner)
+            {
+                Header = Headers.Join;
+                RoomId = room;
+                UserId = joiner;
+            }
+            public byte[] ToPacket()
+            {
+                var packet = $"{Header.ToStringValue()} {RoomId}@{UserId}@";
+                return Encoding.UTF8.GetBytes(packet);
+            }
+        }
+        public class Leave : ISendPacket
+        {
+            public Headers Header { get; private set; }
+            public string RoomId { get; private set; }
+            public string UserId { get; private set; }
+            public Leave(string room, string leaver)
+            {
+                Header = Headers.Leave;
+                RoomId = room;
+                UserId = leaver;
+            }
+            public byte[] ToPacket()
+            {
+                var packet = $"{Header.ToStringValue()} {RoomId}@{UserId}@";
+                return Encoding.UTF8.GetBytes(packet);
+            }
+        }
+
+        public class Literal:ISendPacket
+        {
+            public Headers Header { get; private set; }
             public string UserId { get; private set; }
             public string RoomId { get; private set; }
             public List<string> Content { get; private set; }
-            public Literal(Packet.Headers header)
+            public Literal(Headers header)
             {
                 Header = header;
                 Content = new List<string>();

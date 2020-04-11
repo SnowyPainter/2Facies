@@ -70,9 +70,9 @@ namespace _2Facies
 
         private void CreateConfirm_Clicked(object sender, RoutedEventArgs e)
         {
-            client.Create(Title_Textbox.Text, int.Parse(MaxPeople_Textbox.Text), (msge) =>
+            client.Create(Title_Textbox.Text, int.Parse(MaxPeople_Textbox.Text), (packet) =>
             {
-                string id = msge.Data.Split('@')[1];
+                string id = packet.Body;
                 Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() => {
                     RoomWindow rw = new RoomWindow(id);
                     rw.Show();

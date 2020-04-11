@@ -96,7 +96,7 @@ namespace _2Facies
             return ms.ToArray();
         }
 
-        public static string ToStringValue(this Packet.Headers header)
+        public static string ToStringValue(this Socket.Headers header)
         {
             return ((int)header).ToString();
         }

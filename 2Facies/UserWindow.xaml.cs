@@ -21,7 +21,7 @@ namespace _2Facies
         //readonly constants variables
         private readonly string Token = null;
         //data variables
-        public static Packet.DataPublic userData;
+        public static Packet.DataPublic UserData;
 
         //private WsClient client;
         private Logger logger;
@@ -30,7 +30,7 @@ namespace _2Facies
         public UserWindow(string token)
         {
             InitializeComponent();
-            userData = new Packet.DataPublic();
+            UserData = new Packet.DataPublic();
             logger = new Logger(new System.IO.FileInfo($@"{FileResources.LogFile}"));
             //client = new WsClient(ErrorHandler);
             Token = token;
@@ -107,8 +107,8 @@ namespace _2Facies
             }
             else
             {
-                userData.Bind(jsonData);
-                AsyncControlsInitilize(userData);
+                UserData.Bind(jsonData);
+                AsyncControlsInitilize(UserData);
             }
 
             if (!(await reqCheck))
