@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace _2Facies
         {
             try
             {
-                var response = ServerClient.RequestGet($"{Http.Request.Domain}/api/client/version");
+                var response = RequestGet($"{Http.Request.Domain}/api/client/version");
                 return await response != null;
             }
             catch
@@ -72,6 +73,22 @@ namespace _2Facies
             var url = $"{Http.Request.Domain}/{Http.Request.ConnectableRoomListURL}";
             var rawlist = await (await ServerClient.RequestGet(url)).ReadAsStringAsync();
             return JsonConvert.DeserializeObject<List<Packet.Room>>(rawlist);
+        }
+
+        public static async Task<Packet.DataPublic> GetPublicUserData(string id)
+        {
+            var url = $"{Http.Request.Domain}/{Http.Request.UserPublicInfoURL}/{id}";
+            var rawInfo = await (await RequestGet(url)).ReadAsStringAsync();
+            
+            var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(rawInfo);
+            if(json.ContainsKey("result") && json["result"] == "false")
+            {
+                return null;
+            }
+
+            var packedInfo = new Packet.DataPublic(json);
+            
+            return packedInfo;
         }
     }
 }

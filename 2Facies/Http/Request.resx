@@ -143,7 +143,7 @@
     <comment>WebSocket</comment>
   </data>
   <data name="UserPublicInfoURL" xml:space="preserve">
-    <value>user/</value>
+    <value>user</value>
     <comment>GET /:id No auth header</comment>
   </data>
   <data name="UserTokenInfoURL" xml:space="preserve">

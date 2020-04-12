@@ -72,7 +72,6 @@ namespace _2Facies
 
         public void Emit(ISendPacket packet)
         {
-            Debug.WriteLine(packet.ToPacket().Length);
             socket.Send(packet.ToPacket());
         }
 
