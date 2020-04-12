@@ -64,7 +64,7 @@ namespace _2Facies
         }
         private void sampleHandler(SampleRTA sample)
         {
-            if(!microphoneMute)
+            if (!microphoneMute)
                 client.Emit(new SocketPacket.BroadcastAudio(WsClient.Room.Id, UserWindow.UserData.Id, sample.Sample));
         }
         private void loggerHandler(string logMessage)
@@ -76,15 +76,11 @@ namespace _2Facies
         //--------------------------------------------------------
         public RoomWindow(string id)
         {
-            InitializeComponent();
             client = new WsClient(errorSocketHandler);
+
+            InitializeComponent();
+
             client.Join(id, UserWindow.UserData.Id);
-
-            InitSocketEvents();
-
-            //variable init
-            InitVariables();
-
             client.Emit(new SocketPacket.Participants(WsClient.Room.Id, UserWindow.UserData.Name));
         }
         public RoomWindow(Packet.Room data) : this(data.Id)
@@ -97,27 +93,39 @@ namespace _2Facies
         //-------------------------------------------------------
         //------------------------Initalize Objects--------------
         //-------------------------------------------------------
+
+        private void Window_Initilized(object sender, EventArgs e)
+        {
+            InitSocketEvents();
+            InitVariables();
+        }
+
         private void InitVariables()
         {
+            //participants[UserWindow.UserData.Id] = UserWindow.UserData;
             logger = new Logger(new FileInfo($@"{FileResources.LogFile}"), loggerHandler);
-            
             rta = new SharpRTA();
-            rta.Start(sampleHandler);
-
-            microphoneMute = true;
-
             brushConverter = new BrushConverter();
+
+            rta.Start(sampleHandler);
+            microphoneMute = true;
 
             selfColor = (SolidColorBrush)brushConverter.ConvertFrom("#9951b8");
             otherColor = (SolidColorBrush)brushConverter.ConvertFrom("#bdbdbd");
+
         }
         private void InitSocketEvents()
         {
-            client.On(Headers.Broadcast.ToStringValue(), (packet) =>
+            client.On(Headers.Broadcast.ToStringValue(), async (packet) =>
             {
-                var message = packet.Body;
-                var writer = packet.Caster;
-                //Debug.WriteLine($"ID:{packet.Caster}, BODY:{packet.Body}");
+                if (!participants.ContainsKey(packet.Caster))
+                    participants.Add(packet.Caster,await ServerClient.GetPublicUserData(UserWindow.UserData.Id));
+                    
+
+                string id = packet.Caster;
+                string message = packet.Body;
+                string writer = participants[id].Name;
+
                 Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
                     var msg = new ChatMessage
@@ -127,7 +135,6 @@ namespace _2Facies
                         TextAlign = TextAlignment.Left,
                         HorizontalAlign = HorizontalAlignment.Left
                     };
-                    Console.WriteLine(packet.Body);
                     ChatPanel.Children.Add(msg);
 
                 }));
@@ -137,7 +144,6 @@ namespace _2Facies
             client.On(Headers.BroadcastAudio.ToStringValue(), (packet) =>
             {
                 var data = packet.Body;
-                Debug.WriteLine(data);
                 Stream ms = new MemoryStream(Convert.FromBase64String(data));
 
                 rta.Keep(ms.ToByteArray());
@@ -147,8 +153,7 @@ namespace _2Facies
             client.On(Headers.Participants.ToStringValue(), (packet) =>
             {
                 var participants = int.Parse(packet.Body);
-                currentParticipants = participants;
-                Debug.WriteLine($"Participatns Caster:{packet.Caster}, BODY:{packet.Body}");
+                //Debug.WriteLine($"Participatns Caster:{packet.Caster}, BODY:{packet.Body}");
                 Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
                     ParticipantsText.Text = $"{participants}명 접속중";
@@ -160,16 +165,20 @@ namespace _2Facies
         //-------------------------------------------------------
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if(rta.Active)
+            if (rta.Active)
             {
                 rta.Stop();
             }
             if (UserWindow.UserData != null && WsClient.Room != null)
             {
                 var roomId = WsClient.Room.Id;
-                
-                client.Leave(roomId, UserWindow.UserData.Id);
-                client.Emit(new SocketPacket.Participants(roomId, UserWindow.UserData.Name));
+                var userData = UserWindow.UserData;
+
+                if (participants.ContainsKey(userData.Id)) participants.Remove(userData.Id);
+
+                client.Emit(new SocketPacket.Broadcast(WsClient.Room.Id, userData.Id, $"{userData.Name} left this room"));
+                client.Leave(roomId, userData.Id);
+                client.Emit(new SocketPacket.Participants(roomId, userData.Name));
             }
 
         }
@@ -198,7 +207,8 @@ namespace _2Facies
         private BrushConverter brushConverter;
         private SolidColorBrush selfColor, otherColor;
 
-        private int currentParticipants;
+        private int currentParticipants { get { return participants.Count; } }
+        private Dictionary<string, Packet.DataPublic> participants = new Dictionary<string, Packet.DataPublic>();
         private bool microphoneMute;
 
         private Point currentPoint;
@@ -212,7 +222,7 @@ namespace _2Facies
             var text = ChatTextBox.Text;
             if (text != "" && e.Key == Key.Enter)
             {
-                client.Emit(new SocketPacket.Broadcast(WsClient.Room.Id, UserWindow.UserData.Name, text));
+                client.Emit(new SocketPacket.Broadcast(WsClient.Room.Id, UserWindow.UserData.Id, text));
                 var msg = new ChatMessage
                 {
                     Message = text,
@@ -227,7 +237,7 @@ namespace _2Facies
             }
         }
         //***********************************
-        //Record Voicechat / NONE COMPLETE / -> WEB RTC - ing
+        //Record Voicechat / NONE COMPLETE / -> WEB RTC - ing -> RTA
         //***********************************
         private void VoiceChatButton_Click(object sender, RoutedEventArgs e)
         {
@@ -236,9 +246,9 @@ namespace _2Facies
                 VoiceChatButton.Background = (SolidColorBrush)brushConverter.ConvertFromString("#FFC10F0F");
                 VoiceChatIcon.Kind = PackIconKind.Record;
                 microphoneMute = false;
-            } 
+            }
             else
-            {   
+            {
                 VoiceChatButton.Background = (SolidColorBrush)brushConverter.ConvertFromString("#FF673AB7");
                 VoiceChatIcon.Kind = PackIconKind.Microphone;
                 microphoneMute = true;
@@ -274,40 +284,23 @@ namespace _2Facies
 
             }
         }
-
-        private void Window_Initialized(object sender, EventArgs e)
-        {
-            /*
-            var pc = new PeerConnection();
-            var config = new PeerConnectionConfiguration
-            {
-                IceServers = new List<IceServer> {
-                    new IceServer{ Urls = { "stun:stun.l.google.com:19302" } 
-                   }
-                }
-            };
-            await pc.InitializeAsync(config);
-            await pc.AddLocalAudioTrackAsync();
-            */
-        }
-
         public RoomWindow() //testing
         {
-            InitializeComponent();
-
-            InitVariables();
-
-            UserWindow.UserData = new Packet.DataPublic("12", "James", "S@g");
+            UserWindow.UserData = new Packet.DataPublic("A", "닉네임123", "S@g", 13, true);
             client = new WsClient(errorSocketHandler);
             client.Create("Title", 3, (msge) =>
             {
-                Debug.WriteLine(msge.Body);
+                //Debug.WriteLine(msge.Body);
             });
 
             client.Join("0", UserWindow.UserData.Id);
-            InitSocketEvents();
 
-            client.Emit(new SocketPacket.Participants(WsClient.Room.Id, UserWindow.UserData.Name));
+            InitializeComponent();
+
+            var data = UserWindow.UserData;
+            client.Emit(new SocketPacket.Broadcast(WsClient.Room.Id, data.Id, $"{data.Name} Joined"));
+            client.Emit(new SocketPacket.Participants(WsClient.Room.Id, data.Id));
+
         }
     }
 }

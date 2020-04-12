@@ -117,12 +117,14 @@ namespace _2Facies
         public class DataPublic : IPacket, IPublicData
         {
             public DataPublic() { }
-            public DataPublic(string id)
+            public DataPublic(Dictionary<string, string> jsonData)
+            {
+                Bind(jsonData);
+            }
+            //TESTING
+            public DataPublic(string id, string name, string email, int age, bool logined)
             {
                 Id = id;
-            }
-            public DataPublic(string id, string name, string email) : this(id)
-            {
                 Name = name; Email = email;
             }
 
@@ -130,12 +132,13 @@ namespace _2Facies
             public string Name { get; set; }
             public string Email { get; set; }
             public int Age { get; set; }
+            public bool Login { get; set; }
 
             public Dictionary<string, string> Tuple()
             {
                 return new Dictionary<string, string>()
                 {
-                    {"userId", Id }, {"name", Name}, {"email", Email}, {"age", Age.ToString()}
+                    {"userId", Id }, {"name", Name}, {"email", Email}, {"age", Age.ToString()}, {"login", (Login ? 1:0).ToString()}
                 };
             }
             public void Bind(Dictionary<string, string> jsonData)
@@ -144,6 +147,7 @@ namespace _2Facies
                 Name = jsonData["name"];
                 Email = jsonData["email"];
                 Age = int.Parse(jsonData["age"]);
+                //Login = jsonData["login"];
             }
         }
 

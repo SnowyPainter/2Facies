@@ -32,36 +32,12 @@ namespace _2Facies
             InitializeComponent();
             UserData = new Packet.DataPublic();
             logger = new Logger(new System.IO.FileInfo($@"{FileResources.LogFile}"));
-            //client = new WsClient(ErrorHandler);
+
             Token = token;
         }
         /*bool testing;
          public UserWindow() { testing = true; }*/
-        /*public void ErrorHandler(Packet.ErrorCode code)
-        {
-            switch (code)
-            {
-                case Packet.ErrorCode.WrongCode:
-                    MessageBox.Show("Wrong Code");
-                    break;
-                case Packet.ErrorCode.RoomJoin:
-                    MessageBox.Show("There was an error with join room");
-                    break;
-                case Packet.ErrorCode.RoomLeave:
-                    MessageBox.Show("There was an error with leave room");
-                    break;
-                case Packet.ErrorCode.RoomNotFound:
-                    MessageBox.Show("Room couldn't be found");
-                    break;
-                case Packet.ErrorCode.FormatError:
-                    MessageBox.Show("Socket format error");
-                    break;
-                case Packet.ErrorCode.RoomExist:
-                    MessageBox.Show("Cannot create room. existing");
-                    break;
-            }
-        }
-        */
+
 
         private void QuickMatchUIReset(bool start)
         {
